@@ -14,17 +14,17 @@ import {
     Toggle
 } from '@cloudscape-design/components';
 import React, { useCallback } from 'react';
+import { useAppDispatch, useAppSelector } from '../store/hooks/hooks';
+import {
+    useLazyDocumentToDownloadQuery,
+    useLazyGetDocumentByCaseAndDocumentIdQuery
+} from '../store/reducers/documentApiSlice';
+import { selectEntityStatus, setStatus } from '../store/reducers/entitySlice';
+import { useRedactMutation } from '../store/reducers/redactApiSlice';
 import { isStatusSuccess, renderStatus } from '../utils/common-renderers';
 import { COMPREHEND_MEDICAL_SERVICE, ENTITIES, EntityTypes, PREVIEW_REDACTION_ON } from '../utils/constants';
 import './EntitiesList.css';
 import { getEntitiesToProcess } from './entityUtils';
-import { useRedactMutation } from '../store/reducers/redactApiSlice';
-import {
-    useLazyGetDocumentByCaseAndDocumentIdQuery,
-    useLazyDocumentToDownloadQuery
-} from '../store/reducers/documentApiSlice';
-import { useAppDispatch, useAppSelector } from '../store/hooks/hooks';
-import { selectEntityStatus, setStatus } from '../store/reducers/entitySlice';
 
 type EntitiesListProps = {
     entities: any;

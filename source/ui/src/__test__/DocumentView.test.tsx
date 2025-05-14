@@ -5,7 +5,6 @@ import createWrapper from '@cloudscape-design/components/test-utils/dom';
 import '@testing-library/jest-dom';
 import { screen, waitFor } from '@testing-library/react';
 import { API } from 'aws-amplify';
-import { API_NAME, InferenceName } from '../utils/constants';
 import DocumentView from '../components/DocumentView/DocumentView';
 import { renderWithProviders } from './utils/tesUtils';
 
@@ -26,7 +25,8 @@ const documentViewProps = {
     setSelectedDocumentId: jest.fn,
     setSelectedDocumentFileType: jest.fn,
     setSelectedCaseName: jest.fn,
-    setSelectedDocumentName: jest.fn
+    setSelectedDocumentName: jest.fn,
+    textractDetectResponse: {}
 };
 jest.mock('../components/DocumentTable/DocumentTable', () => ({
     generateToken: () => 'fake-jwt-token'

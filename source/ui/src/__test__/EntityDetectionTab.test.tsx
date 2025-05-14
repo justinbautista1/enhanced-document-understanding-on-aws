@@ -5,9 +5,9 @@ import { StatusIndicatorProps } from '@cloudscape-design/components';
 import createWrapper from '@cloudscape-design/components/test-utils/dom';
 import '@testing-library/jest-dom';
 import { screen, waitFor } from '@testing-library/react';
-import { allSelectedEntities2, entities } from './test_data';
-import { EntityTypes } from '../utils/constants';
 import EntityDetectionTab from '../components/EntityDetectionTab';
+import { EntityTypes } from '../utils/constants';
+import { allSelectedEntities2, entities } from './test_data';
 import { renderWithProviders } from './utils/tesUtils';
 
 const entityDetectionPropsError = {
@@ -29,6 +29,7 @@ const entityDetectionPropsError = {
     currentStatus: 'error' as StatusIndicatorProps.Type,
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
+    textractText: {},
     retrieveSignedUrl: jest.fn()
 };
 
@@ -51,7 +52,8 @@ const entityDetectionPropsLoading = {
     currentStatus: 'loading' as StatusIndicatorProps.Type,
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
-    retrieveSignedUrl: jest.fn()
+    retrieveSignedUrl: jest.fn(),
+    textractText: {}
 };
 
 const entityDetectionPropsWithEntities = {
@@ -76,7 +78,8 @@ const entityDetectionPropsWithEntities = {
     setSelectedEntities: jest.fn(),
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
-    retrieveSignedUrl: jest.fn()
+    retrieveSignedUrl: jest.fn(),
+    textractText: {}
 };
 
 const entityDetectionPropsNoEntities = {
@@ -101,7 +104,8 @@ const entityDetectionPropsNoEntities = {
     setSelectedEntities: jest.fn(),
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
-    retrieveSignedUrl: jest.fn()
+    retrieveSignedUrl: jest.fn(),
+    textractText: {}
 };
 
 jest.mock('react-pdf', () => ({

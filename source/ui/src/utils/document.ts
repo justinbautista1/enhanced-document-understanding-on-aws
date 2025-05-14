@@ -55,9 +55,9 @@ function getDocumentBlocks(document: any, type: any) {
  * @param {Object} document A Textract document object
  * @return {Object}
  */
-function getIndexedDocumentBlocks(document: any, type:any) {
+function getIndexedDocumentBlocks(document: any, type: any) {
     const blocks = getDocumentBlocks(document, type);
-    const props: any = prop('Id')
+    const props: any = prop('Id');
     const indexedBlocks = indexBy(props, blocks);
     return indexedBlocks;
 }
@@ -68,7 +68,7 @@ function getIndexedDocumentBlocks(document: any, type:any) {
  * @param {Array} ids An array of Block IDs to get
  * @return {Array}
  */
-function getDocumentBlocksByIds(document: any, ids: any , type: any) {
+function getDocumentBlocksByIds(document: any, ids: any, type: any) {
     const indexedBlocks = getIndexedDocumentBlocks(document, type);
     return ids.reduce((accumulator: any, current: any) => {
         return indexedBlocks[current] ? [...accumulator, indexedBlocks[current]] : accumulator;
@@ -140,7 +140,7 @@ export function getDocumentPageCount(document: any, type: any) {
         lensMultiPageCount = lensMultiPageCountAnalyze;
     }
     const isChunkedResponse = is(Array, inference);
-    return view((isChunkedResponse ? lensMultiPageCount : lensPageCount) as Lens<any,any>, document);
+    return view((isChunkedResponse ? lensMultiPageCount : lensPageCount) as Lens<any, any>, document);
 }
 
 export function getDocumentLines(document: any, type: any) {
@@ -231,7 +231,9 @@ export function getPageKeyValuePairs(document: any, pageNumber: any) {
         };
     });
 
-    return sortBy((x: any) => x.keyBoundingBox.Top + 0.05 * x.keyBoundingBox.Left)(pairs.filter((p: any) => p.key || p.value));
+    return sortBy((x: any) => x.keyBoundingBox.Top + 0.05 * x.keyBoundingBox.Left)(
+        pairs.filter((p: any) => p.key || p.value)
+    );
 }
 
 export function getDocumentTables(document: any, type: any) {

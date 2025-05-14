@@ -32,6 +32,7 @@ type EntityDetectionTabProps = {
     currentStatus: StatusIndicatorProps.Type | undefined;
     dataTestId?: string;
     retrieveSignedUrl: Function;
+    textractText: any;
 };
 
 /**
@@ -114,6 +115,7 @@ export default function EntityDetectionTab(props: EntityDetectionTabProps) {
                             break;
                         case 2:
                             boundingBoxes = boundingBoxes.concat(getBoundingBoxesForEntityValue(entities, entityPath));
+                            console.log('boundingBoxes', boundingBoxes);
                             break;
                         case 1:
                         default:
