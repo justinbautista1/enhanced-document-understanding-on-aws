@@ -105,7 +105,7 @@ function App({ signOut, enableKendra, enableOpenSearch, workflowConfig, required
             <TopNavigation
                 identity={{
                     href: '/',
-                    title: 'Enhanced Document Understanding on AWS'
+                    title: 'Enhanced Document Understanding on AWS with Phrases'
                 }}
                 utilities={[
                     {

@@ -237,10 +237,22 @@ const EntitiesList: React.FC<EntitiesListProps> = (props) => {
                 }
             }
 
+            const phrasesToRedact = {
+                phrases: [
+                    {
+                        text: 'Acme Corporation has been an industry leader for over 25 years. We take pride in fostering a work environment where employees thrive professionally and personally. For any troubleshooting during your first week, feel free to connect with our IT administrator, John Doe, located on the third floor of the main office.',
+                        pages: [1]
+                    }
+                ]
+            };
+
+            const textsToRedact = Object.assign({}, entitiesToRedact, phrasesToRedact);
+            console.log('textsToRedact', textsToRedact);
+
             await redact({
                 caseId: props.selectedCaseId,
                 documentId: props.selectedDocumentId,
-                body: entitiesToRedact
+                body: textsToRedact
             }).unwrap();
 
             const documentResponse = await getDocumentByCaseAndDocumentIdTrigger({
