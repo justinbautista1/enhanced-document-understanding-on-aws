@@ -43,6 +43,7 @@ type EntitiesListProps = {
     previewRedaction: string;
     setPreviewRedaction: Function;
     currentStatus: StatusIndicatorProps.Type | undefined;
+    phrase: string;
 };
 
 type EntityItemProps = {
@@ -220,6 +221,7 @@ const EntitiesList: React.FC<EntitiesListProps> = (props) => {
                     [EntityTypes.PII]: {}
                 }
             };
+
             for (const entityType of Object.values(EntityTypes)) {
                 if (props.selectedEntities[entityType] && props.selectedEntities[entityType].length > 0) {
                     const entities = getEntitiesToProcess(entityType, props);
@@ -237,17 +239,27 @@ const EntitiesList: React.FC<EntitiesListProps> = (props) => {
                 }
             }
 
+            console.log(props.phrase);
             const phrasesToRedact = {
                 phrases: [
                     {
-                        text: 'Acme Corporation has been an industry leader for over 25 years. We take pride in fostering a work environment where employees thrive professionally and personally. For any troubleshooting during your first week, feel free to connect with our IT administrator, John Doe, located on the third floor of the main office.',
+                        text: props.phrase,
                         pages: [1]
                     }
                 ]
             };
+            // const phrasesToRedact = {
+            //     phrases: [
+            //         {
+            //             text: 'Acme Corporation has been an industry leader for over 25 years. We take pride in fostering a work environment where employees thrive professionally and personally. For any troubleshooting during your first week, feel free to connect with our IT administrator, John Doe, located on the third floor of the main office.',
+            //             pages: [1]
+            //         }
+            //     ]
+            // };
 
             const textsToRedact = Object.assign({}, entitiesToRedact, phrasesToRedact);
             console.log('textsToRedact', textsToRedact);
+            console.log('entitiesToRedact', entitiesToRedact);
 
             await redact({
                 caseId: props.selectedCaseId,

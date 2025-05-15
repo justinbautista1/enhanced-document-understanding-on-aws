@@ -76,7 +76,7 @@ class EntityDetector {
     };
 
     /**
-     * Performs entity detection on a text paragraph/phrase using Comprehend/ComprehendMedical. Based on class configuration,
+     * Performs entity detection on a text paragraph/ww using Comprehend/ComprehendMedical. Based on class configuration,
      * the correct API will be used.
      *
      * @param {String} params.pageText the text to extract entities from

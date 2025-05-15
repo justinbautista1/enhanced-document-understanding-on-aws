@@ -4,15 +4,15 @@
 import { StatusIndicatorProps } from '@cloudscape-design/components';
 import '@testing-library/jest-dom';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { API, Auth } from 'aws-amplify';
-import { allSelectedEntities, entities } from './test_data';
-import { COMPREHEND_MEDICAL_SERVICE, COMPREHEND_SERVICE, EntityTypes } from '../utils/constants';
-import EntitiesList from '../components/EntitiesList';
-import { renderWithProviders } from './utils/tesUtils';
-import { server } from '../mock/api/server';
-import { rest } from 'msw';
-import { MOCK_CONFIG } from '../mock/api/handler';
 import userEvent from '@testing-library/user-event';
+import { API, Auth } from 'aws-amplify';
+import { rest } from 'msw';
+import EntitiesList from '../components/EntitiesList';
+import { MOCK_CONFIG } from '../mock/api/handler';
+import { server } from '../mock/api/server';
+import { COMPREHEND_MEDICAL_SERVICE, COMPREHEND_SERVICE, EntityTypes } from '../utils/constants';
+import { allSelectedEntities, entities } from './test_data';
+import { renderWithProviders } from './utils/tesUtils';
 
 let windowSpy = jest.spyOn(window, 'open');
 
@@ -35,7 +35,8 @@ const entitiesListProps = {
     selectedDocumentId: 'fake-document-id',
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
-    currentStatus: 'success' as StatusIndicatorProps.Type
+    currentStatus: 'success' as StatusIndicatorProps.Type,
+    phrase: ''
 };
 
 const entitiesListPropsEmpty = {
@@ -56,7 +57,8 @@ const entitiesListPropsEmpty = {
     selectedDocumentId: 'fake-document-id',
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
-    currentStatus: 'success' as StatusIndicatorProps.Type
+    currentStatus: 'success' as StatusIndicatorProps.Type,
+    phrase: ''
 };
 
 const entitiesListPropsError = {
@@ -77,7 +79,8 @@ const entitiesListPropsError = {
     selectedDocumentId: 'fake-document-id',
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
-    currentStatus: 'error' as StatusIndicatorProps.Type
+    currentStatus: 'error' as StatusIndicatorProps.Type,
+    phrase: ''
 };
 
 const entitiesListPropsLoading = {
@@ -98,7 +101,8 @@ const entitiesListPropsLoading = {
     selectedDocumentId: 'fake-document-id',
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
-    currentStatus: 'loading' as StatusIndicatorProps.Type
+    currentStatus: 'loading' as StatusIndicatorProps.Type,
+    phrase: ''
 };
 
 const entitiesListPropsEmptyMedical = {
@@ -119,7 +123,8 @@ const entitiesListPropsEmptyMedical = {
     selectedDocumentId: 'fake-document-id',
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
-    currentStatus: 'success' as StatusIndicatorProps.Type
+    currentStatus: 'success' as StatusIndicatorProps.Type,
+    phrase: ''
 };
 
 const entitiesListPropsMedicalError = {
@@ -140,7 +145,8 @@ const entitiesListPropsMedicalError = {
     selectedDocumentId: 'fake-document-id',
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
-    currentStatus: 'error' as StatusIndicatorProps.Type
+    currentStatus: 'error' as StatusIndicatorProps.Type,
+    phrase: ''
 };
 
 const entitiesListPropsMedicalLoading = {
@@ -161,7 +167,8 @@ const entitiesListPropsMedicalLoading = {
     selectedDocumentId: 'fake-document-id',
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
-    currentStatus: 'loading' as StatusIndicatorProps.Type
+    currentStatus: 'loading' as StatusIndicatorProps.Type,
+    phrase: ''
 };
 
 const mockAPI = {

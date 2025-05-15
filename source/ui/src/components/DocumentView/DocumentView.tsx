@@ -79,14 +79,68 @@ export default function DocumentView(props: DocumentViewProps) {
         const lines = getDocumentLines(documentProcessingResults, 'LINE');
         const standardEntities = { ...documentProcessingResults.comprehendGenericResponse } as any;
 
-        // Build HARDCODE entity from textractDetectResponse, matching standardEntities structure
-        const textract = documentProcessingResults.textractDetectResponse;
-        const hardcodeEntities: any[] = [];
+        const textractWordToEntity = (textractWordData: any) => {
+            const entity = {
+                Score: textractWordData.Confidence / 100,
+                BoundingBoxes: [
+                    {
+                        Height: textractWordData.Geometry.BoundingBox.Height,
+                        Left: textractWordData.Geometry.BoundingBox.Left,
+                        Top: textractWordData.Geometry.BoundingBox.Top,
+                        Width: textractWordData.Geometry.BoundingBox.Width
+                    }
+                ]
+            };
+
+            return entity;
+        };
+
+        const findPhraseInPage = (phrase: string, textractPageBlocks: any[]) => {
+            const words = textractPageBlocks.filter((block: any) => block.BlockType === 'WORD');
+            const foundPhrases = [];
+            const phraseWords = phrase.trim().toLowerCase().split(/\s+/);
+
+            for (let i = 0; i < words.length - phraseWords.length; i++) {
+                let found = true;
+
+                for (let j = 0; j < phraseWords.length; j++) {
+                    if (words[i + j].Text.toLowerCase() !== phraseWords[j]) {
+                        found = false;
+                        break;
+                    }
+                }
+
+                if (found) {
+                    const foundPhraseWords = words.slice(i, i + phraseWords.length);
+                    const entities = foundPhraseWords.map((word: any) => textractWordToEntity(word));
+
+                    foundPhrases.push(entities);
+                }
+            }
+
+            return foundPhrases;
+        };
+
+        const textract: any = documentProcessingResults.textractDetectResponse;
+        const phrase = 'Contact Information';
+        const foundPhrasesByPage: any = {};
+
+        if (Array.isArray(textract)) {
+            for (let i = 0; i < textract.length; i++) {
+                const foundPhrases = findPhraseInPage(phrase, textract[i].Blocks);
+                if (!foundPhrases.length) {
+                    continue;
+                }
+                foundPhrasesByPage[i + 1] = foundPhrases.flat();
+            }
+        }
+
+        const hardcodeEntities = foundPhrasesByPage;
         standardEntities.OTHER = {
             ...(standardEntities.OTHER || {}),
             HARDCODE: hardcodeEntities
         };
-        console.log('standardEntities', standardEntities);
+
         return {
             pairs,
             lines,
@@ -94,7 +148,8 @@ export default function DocumentView(props: DocumentViewProps) {
             standardEntities,
             medicalEntities: documentProcessingResults.comprehendMedicalResponse,
             piiEntities: documentProcessingResults.comprehendPiiResponse,
-            textractDetectResponse: documentProcessingResults.textractDetectResponse
+            textractDetectResponse: documentProcessingResults.textractDetectResponse,
+            phrase: phrase
         };
     }, [documentProcessingResults, props.textractDetectResponse]);
 
@@ -153,7 +208,6 @@ export default function DocumentView(props: DocumentViewProps) {
     useEffect(() => {
         setDocumentPageCount(getDocumentPageCount(documentProcessingResults, 'LINE'));
     }, [documentProcessingResults]);
-    console.log('standardEntities', docData.standardEntities);
 
     const mainTabs = [
         {
@@ -181,6 +235,7 @@ export default function DocumentView(props: DocumentViewProps) {
                     retrieveSignedUrl={retrieveSignedUrl}
                     dataTestId="entity-detection-tab"
                     textractText={docData.textractDetectResponse}
+                    phrase={docData.phrase}
                 />
             )
         },
@@ -209,6 +264,7 @@ export default function DocumentView(props: DocumentViewProps) {
                     retrieveSignedUrl={retrieveSignedUrl}
                     dataTestId="medical-entity-detection-tab"
                     textractText={docData.textractDetectResponse}
+                    phrase={docData.phrase}
                 />
             )
         },
@@ -237,6 +293,7 @@ export default function DocumentView(props: DocumentViewProps) {
                     retrieveSignedUrl={retrieveSignedUrl}
                     dataTestId="pii-detection-tab"
                     textractText={docData.textractDetectResponse}
+                    phrase={docData.phrase}
                 />
             )
         },
