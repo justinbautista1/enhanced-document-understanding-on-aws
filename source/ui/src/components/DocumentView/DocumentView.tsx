@@ -59,6 +59,7 @@ export default function DocumentView(props: DocumentViewProps) {
     const [documentPageCount, setDocumentPageCount] = React.useState<number>(0);
     const [currentPageNumber, setCurrentPageNumber] = React.useState(1);
     const documentProcessingResults = useAppSelector(selectDocumentProcessingResult);
+    const [phrase, setPhrase] = React.useState<string>('John Doe');
     console.log('documentProcessingResults', documentProcessingResults);
 
     const [selectedEntities, setSelectedEntities] = React.useState<any>({
@@ -131,7 +132,7 @@ export default function DocumentView(props: DocumentViewProps) {
                     BoundingBoxes: [
                         {
                             Height: lines[i].Geometry.BoundingBox.Height,
-                            Left: lines[i].Geometry.BoundingBox.Left,
+                            Left: lines[i].Geometry.BoundingBox.Left + lines[i].Geometry.BoundingBox.Width,
                             Top: lines[i].Geometry.BoundingBox.Top,
                             Width: 0
                         }
@@ -144,7 +145,13 @@ export default function DocumentView(props: DocumentViewProps) {
                     const bottom = lineEntity.BoundingBoxes[0].Height + top;
 
                     if (bottom >= wordEntity.BoundingBoxes[0].Top && wordEntity.BoundingBoxes[0].Top >= top) {
-                        const spaces = wordEntity.BoundingBoxes[0].Left - (lineEntity.BoundingBoxes[0].Width + lineEntity.BoundingBoxes[0].Left)
+                        if (wordEntity.BoundingBoxes[0].Left < lineEntity.BoundingBoxes[0].Left) {
+                            lineEntity.BoundingBoxes[0].Left = wordEntity.BoundingBoxes[0].Left;
+                        }
+
+                        const spaces =
+                            wordEntity.BoundingBoxes[0].Left -
+                            (lineEntity.BoundingBoxes[0].Width + lineEntity.BoundingBoxes[0].Left);
                         lineEntity.BoundingBoxes[0].Width += wordEntity.BoundingBoxes[0].Width + spaces;
                     }
                 }
@@ -158,8 +165,6 @@ export default function DocumentView(props: DocumentViewProps) {
         };
 
         const textract: any = documentProcessingResults.textractDetectResponse;
-        const phrase =
-            'This document outlines key information for new employees starting at our organization. ';
         const foundPhrasesByPage: Record<number, any> = {};
         const lineEntitiesByPage: any = {};
 
@@ -177,11 +182,11 @@ export default function DocumentView(props: DocumentViewProps) {
                     textract[pageNo - 1].Blocks,
                     foundPhrasesByPage[pageNo]
                 );
-                
+
                 if (!lineEntities.length) {
-                   continue; 
+                    continue;
                 }
-                lineEntitiesByPage[pageNo] = lineEntities
+                lineEntitiesByPage[pageNo] = lineEntities;
             }
             console.log('lineEntitiesByPage', lineEntitiesByPage);
         }
@@ -195,9 +200,9 @@ export default function DocumentView(props: DocumentViewProps) {
         //             textract[i].Blocks,
         //             foundPhrasesByPage[i]
         //         );
-                
+
         //         if (!lineEntitiesByPage.length) {
-        //            continue; 
+        //            continue;
         //         }
         //         lineEntitiesByPage[i + 1] = lineEntities
         //     }
@@ -217,8 +222,7 @@ export default function DocumentView(props: DocumentViewProps) {
             standardEntities,
             medicalEntities: documentProcessingResults.comprehendMedicalResponse,
             piiEntities: documentProcessingResults.comprehendPiiResponse,
-            textractDetectResponse: documentProcessingResults.textractDetectResponse,
-            phrase: phrase
+            textractDetectResponse: documentProcessingResults.textractDetectResponse
         };
     }, [documentProcessingResults, props.textractDetectResponse]);
 
@@ -304,7 +308,8 @@ export default function DocumentView(props: DocumentViewProps) {
                     retrieveSignedUrl={retrieveSignedUrl}
                     dataTestId="entity-detection-tab"
                     textractText={docData.textractDetectResponse}
-                    phrase={docData.phrase}
+                    phrase={phrase}
+                    setPhrase={setPhrase}
                 />
             )
         },
@@ -333,7 +338,8 @@ export default function DocumentView(props: DocumentViewProps) {
                     retrieveSignedUrl={retrieveSignedUrl}
                     dataTestId="medical-entity-detection-tab"
                     textractText={docData.textractDetectResponse}
-                    phrase={docData.phrase}
+                    phrase={phrase}
+                    setPhrase={setPhrase}
                 />
             )
         },
@@ -362,7 +368,8 @@ export default function DocumentView(props: DocumentViewProps) {
                     retrieveSignedUrl={retrieveSignedUrl}
                     dataTestId="pii-detection-tab"
                     textractText={docData.textractDetectResponse}
-                    phrase={docData.phrase}
+                    phrase={phrase}
+                    setPhrase={setPhrase}
                 />
             )
         },

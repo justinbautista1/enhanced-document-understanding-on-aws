@@ -31,7 +31,8 @@ const entityDetectionPropsError = {
     setPreviewRedaction: jest.fn(),
     retrieveSignedUrl: jest.fn(),
     textractText: {},
-    phrase: ''
+    phrase: '',
+    setPhrase: jest.fn()
 };
 
 const entityDetectionPropsLoading = {
@@ -55,7 +56,8 @@ const entityDetectionPropsLoading = {
     setPreviewRedaction: jest.fn(),
     retrieveSignedUrl: jest.fn(),
     textractText: {},
-    phrase: ''
+    phrase: '',
+    setPhrase: jest.fn()
 };
 
 const entityDetectionPropsWithEntities = {
@@ -82,7 +84,8 @@ const entityDetectionPropsWithEntities = {
     setPreviewRedaction: jest.fn(),
     retrieveSignedUrl: jest.fn(),
     textractText: {},
-    phrase: ''
+    phrase: '',
+    setPhrase: jest.fn()
 };
 
 const entityDetectionPropsNoEntities = {
@@ -109,7 +112,8 @@ const entityDetectionPropsNoEntities = {
     setPreviewRedaction: jest.fn(),
     retrieveSignedUrl: jest.fn(),
     textractText: {},
-    phrase: ''
+    phrase: '',
+    setPhrase: jest.fn()
 };
 
 jest.mock('react-pdf', () => ({

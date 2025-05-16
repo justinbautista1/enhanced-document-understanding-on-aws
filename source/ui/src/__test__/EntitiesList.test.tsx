@@ -36,7 +36,8 @@ const entitiesListProps = {
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
     currentStatus: 'success' as StatusIndicatorProps.Type,
-    phrase: ''
+    phrase: '',
+    setPhrase: jest.fn()
 };
 
 const entitiesListPropsEmpty = {
@@ -58,7 +59,8 @@ const entitiesListPropsEmpty = {
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
     currentStatus: 'success' as StatusIndicatorProps.Type,
-    phrase: ''
+    phrase: '',
+    setPhrase: jest.fn()
 };
 
 const entitiesListPropsError = {
@@ -80,7 +82,8 @@ const entitiesListPropsError = {
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
     currentStatus: 'error' as StatusIndicatorProps.Type,
-    phrase: ''
+    phrase: '',
+    setPhrase: jest.fn()
 };
 
 const entitiesListPropsLoading = {
@@ -102,7 +105,8 @@ const entitiesListPropsLoading = {
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
     currentStatus: 'loading' as StatusIndicatorProps.Type,
-    phrase: ''
+    phrase: '',
+    setPhrase: jest.fn()
 };
 
 const entitiesListPropsEmptyMedical = {
@@ -124,7 +128,8 @@ const entitiesListPropsEmptyMedical = {
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
     currentStatus: 'success' as StatusIndicatorProps.Type,
-    phrase: ''
+    phrase: '',
+    setPhrase: jest.fn()
 };
 
 const entitiesListPropsMedicalError = {
@@ -146,7 +151,8 @@ const entitiesListPropsMedicalError = {
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
     currentStatus: 'error' as StatusIndicatorProps.Type,
-    phrase: ''
+    phrase: '',
+    setPhrase: jest.fn()
 };
 
 const entitiesListPropsMedicalLoading = {
@@ -168,7 +174,8 @@ const entitiesListPropsMedicalLoading = {
     previewRedaction: '',
     setPreviewRedaction: jest.fn(),
     currentStatus: 'loading' as StatusIndicatorProps.Type,
-    phrase: ''
+    phrase: '',
+    setPhrase: jest.fn()
 };
 
 const mockAPI = {

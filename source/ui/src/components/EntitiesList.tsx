@@ -44,6 +44,7 @@ type EntitiesListProps = {
     setPreviewRedaction: Function;
     currentStatus: StatusIndicatorProps.Type | undefined;
     phrase: string;
+    setPhrase: Function;
 };
 
 type EntityItemProps = {

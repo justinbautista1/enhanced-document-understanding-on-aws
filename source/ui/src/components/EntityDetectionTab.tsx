@@ -34,6 +34,7 @@ type EntityDetectionTabProps = {
     retrieveSignedUrl: Function;
     textractText: any;
     phrase: string;
+    setPhrase: Function;
 };
 
 /**
@@ -189,6 +190,7 @@ export default function EntityDetectionTab(props: EntityDetectionTabProps) {
                                 setPreviewRedaction={props.setPreviewRedaction}
                                 currentStatus={props.currentStatus}
                                 phrase={props.phrase}
+                                setPhrase={props.setPhrase}
                             />
                         </Box>
                     </div>
