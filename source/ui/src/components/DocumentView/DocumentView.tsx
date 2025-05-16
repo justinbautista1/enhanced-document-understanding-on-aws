@@ -79,15 +79,15 @@ export default function DocumentView(props: DocumentViewProps) {
         const lines = getDocumentLines(documentProcessingResults, 'LINE');
         const standardEntities = { ...documentProcessingResults.comprehendGenericResponse } as any;
 
-        const textractWordToEntity = (textractWordData: any) => {
+        const textractBlockToEntity = (textractBlock: any) => {
             const entity = {
-                Score: textractWordData.Confidence / 100,
+                Score: textractBlock.Confidence / 100,
                 BoundingBoxes: [
                     {
-                        Height: textractWordData.Geometry.BoundingBox.Height,
-                        Left: textractWordData.Geometry.BoundingBox.Left,
-                        Top: textractWordData.Geometry.BoundingBox.Top,
-                        Width: textractWordData.Geometry.BoundingBox.Width
+                        Height: textractBlock.Geometry.BoundingBox.Height,
+                        Left: textractBlock.Geometry.BoundingBox.Left,
+                        Top: textractBlock.Geometry.BoundingBox.Top,
+                        Width: textractBlock.Geometry.BoundingBox.Width
                     }
                 ]
             };
@@ -104,7 +104,7 @@ export default function DocumentView(props: DocumentViewProps) {
                 let found = true;
 
                 for (let j = 0; j < phraseWords.length; j++) {
-                    if (words[i + j].Text.toLowerCase() !== phraseWords[j]) {
+                    if (!words[i + j].Text.toLowerCase().includes(phraseWords[j])) {
                         found = false;
                         break;
                     }
@@ -112,7 +112,7 @@ export default function DocumentView(props: DocumentViewProps) {
 
                 if (found) {
                     const foundPhraseWords = words.slice(i, i + phraseWords.length);
-                    const entities = foundPhraseWords.map((word: any) => textractWordToEntity(word));
+                    const entities = foundPhraseWords.map((word: any) => textractBlockToEntity(word));
 
                     foundPhrases.push(entities);
                 }
@@ -121,9 +121,47 @@ export default function DocumentView(props: DocumentViewProps) {
             return foundPhrases;
         };
 
+        const wordEntitiesIntoPartialLineEntitiesByPage = (textractPageBlocks: any, wordEntitiesByPage: any) => {
+            const lines = textractPageBlocks.filter((block: any) => block.BlockType === 'LINE');
+            const lineEntities = [];
+
+            for (let i = 0; i < lines.length; i++) {
+                const lineEntity = {
+                    Score: lines[i].Confidence / 100,
+                    BoundingBoxes: [
+                        {
+                            Height: lines[i].Geometry.BoundingBox.Height,
+                            Left: lines[i].Geometry.BoundingBox.Left,
+                            Top: lines[i].Geometry.BoundingBox.Top,
+                            Width: 0
+                        }
+                    ]
+                };
+
+                for (let j = 0; j < wordEntitiesByPage.length; j++) {
+                    const wordEntity = wordEntitiesByPage[j];
+                    const top = lineEntity.BoundingBoxes[0].Top;
+                    const bottom = lineEntity.BoundingBoxes[0].Height + top;
+
+                    if (bottom >= wordEntity.BoundingBoxes[0].Top && wordEntity.BoundingBoxes[0].Top >= top) {
+                        const spaces = wordEntity.BoundingBoxes[0].Left - (lineEntity.BoundingBoxes[0].Width + lineEntity.BoundingBoxes[0].Left)
+                        lineEntity.BoundingBoxes[0].Width += wordEntity.BoundingBoxes[0].Width + spaces;
+                    }
+                }
+
+                if (lineEntity.BoundingBoxes[0].Width > 0) {
+                    lineEntities.push(lineEntity);
+                }
+            }
+
+            return lineEntities;
+        };
+
         const textract: any = documentProcessingResults.textractDetectResponse;
-        const phrase = 'Contact Information';
-        const foundPhrasesByPage: any = {};
+        const phrase =
+            'This document outlines key information for new employees starting at our organization. ';
+        const foundPhrasesByPage: Record<number, any> = {};
+        const lineEntitiesByPage: any = {};
 
         if (Array.isArray(textract)) {
             for (let i = 0; i < textract.length; i++) {
@@ -133,12 +171,43 @@ export default function DocumentView(props: DocumentViewProps) {
                 }
                 foundPhrasesByPage[i + 1] = foundPhrases.flat();
             }
+
+            for (const pageNo of Object.keys(foundPhrasesByPage) as any) {
+                const lineEntities = wordEntitiesIntoPartialLineEntitiesByPage(
+                    textract[pageNo - 1].Blocks,
+                    foundPhrasesByPage[pageNo]
+                );
+                
+                if (!lineEntities.length) {
+                   continue; 
+                }
+                lineEntitiesByPage[pageNo] = lineEntities
+            }
+            console.log('lineEntitiesByPage', lineEntitiesByPage);
         }
 
-        const hardcodeEntities = foundPhrasesByPage;
+        console.log('foundPhrasesByPage', foundPhrasesByPage);
+
+        // const lineEntitiesByPage: any = {}
+        // if (Array.isArray(textract) && foundPhrasesByPage.length) {
+        //     for (let i = 0; i < textract.length; i++) {
+        //         const lineEntities = wordEntitiesIntoPartialLineEntitiesByPage(
+        //             textract[i].Blocks,
+        //             foundPhrasesByPage[i]
+        //         );
+                
+        //         if (!lineEntitiesByPage.length) {
+        //            continue; 
+        //         }
+        //         lineEntitiesByPage[i + 1] = lineEntities
+        //     }
+        //     console.log('lineEntitiesByPage', lineEntitiesByPage);
+        // }
+
+        const hardcodeEntities = lineEntitiesByPage;
         standardEntities.OTHER = {
             ...(standardEntities.OTHER || {}),
-            HARDCODE: hardcodeEntities
+            [phrase]: hardcodeEntities
         };
 
         return {
