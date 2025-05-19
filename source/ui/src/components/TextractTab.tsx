@@ -66,6 +66,8 @@ export default function TextractTab(props: TextractTabProps) {
                             switchPage={props.switchPage}
                             marks={pageLinesAsMarks}
                             retrieveSignedUrl={props.retrieveSignedUrl}
+                            inputPhrase=""
+                            setInputPhrase={() => {}}
                         />
                     )}
                     {props.textractOutputType === TEXTRACT_KEY_VALUE_PAIRS && (
@@ -76,6 +78,8 @@ export default function TextractTab(props: TextractTabProps) {
                             switchPage={props.switchPage}
                             marks={pagePairsAsMarks}
                             retrieveSignedUrl={props.retrieveSignedUrl}
+                            inputPhrase=""
+                            setInputPhrase={() => {}}
                         />
                     )}
                     {props.textractOutputType === TEXTRACT_TABLES && (
@@ -86,6 +90,8 @@ export default function TextractTab(props: TextractTabProps) {
                             switchPage={props.switchPage}
                             tables={pageTables}
                             retrieveSignedUrl={props.retrieveSignedUrl}
+                            inputPhrase=""
+                            setInputPhrase={() => {}}
                         />
                     )}
                     {renderStatus(

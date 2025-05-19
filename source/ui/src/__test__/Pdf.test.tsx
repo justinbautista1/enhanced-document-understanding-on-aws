@@ -4,15 +4,17 @@
 import createWrapper from '@cloudscape-design/components/test-utils/dom';
 import '@testing-library/jest-dom';
 import { render, screen, waitFor } from '@testing-library/react';
-import { marks1, tables } from './test_data';
 import PDF, { DocumentMarks } from '../components/Pdf/Pdf';
+import { marks1, tables } from './test_data';
 
 const pdfPropsPage1 = {
     pdfUrl: 'fake-url',
     currentPageNumber: 1,
     switchPage: jest.fn(),
     marks: marks1,
-    retrieveSignedUrl: jest.fn()
+    retrieveSignedUrl: jest.fn(),
+    inputPhrase: '',
+    setInputPhrase: jest.fn()
 };
 
 const pdfPropsPage2 = {
@@ -20,7 +22,9 @@ const pdfPropsPage2 = {
     currentPageNumber: 2,
     switchPage: jest.fn(),
     marks: marks1,
-    retrieveSignedUrl: jest.fn()
+    retrieveSignedUrl: jest.fn(),
+    inputPhrase: '',
+    setInputPhrase: jest.fn()
 };
 
 pdfPropsPage1.switchPage = jest.fn().mockImplementation((newPage) => {

@@ -37,7 +37,9 @@ const entitiesListProps = {
     setPreviewRedaction: jest.fn(),
     currentStatus: 'success' as StatusIndicatorProps.Type,
     phrase: '',
-    setPhrase: jest.fn()
+    setPhrase: jest.fn(),
+    inputPhrase: '',
+    setInputPhrase: jest.fn()
 };
 
 const entitiesListPropsEmpty = {
@@ -60,7 +62,9 @@ const entitiesListPropsEmpty = {
     setPreviewRedaction: jest.fn(),
     currentStatus: 'success' as StatusIndicatorProps.Type,
     phrase: '',
-    setPhrase: jest.fn()
+    setPhrase: jest.fn(),
+    inputPhrase: '',
+    setInputPhrase: jest.fn()
 };
 
 const entitiesListPropsError = {
@@ -83,7 +87,9 @@ const entitiesListPropsError = {
     setPreviewRedaction: jest.fn(),
     currentStatus: 'error' as StatusIndicatorProps.Type,
     phrase: '',
-    setPhrase: jest.fn()
+    setPhrase: jest.fn(),
+    inputPhrase: '',
+    setInputPhrase: jest.fn()
 };
 
 const entitiesListPropsLoading = {
@@ -106,7 +112,9 @@ const entitiesListPropsLoading = {
     setPreviewRedaction: jest.fn(),
     currentStatus: 'loading' as StatusIndicatorProps.Type,
     phrase: '',
-    setPhrase: jest.fn()
+    setPhrase: jest.fn(),
+    inputPhrase: '',
+    setInputPhrase: jest.fn()
 };
 
 const entitiesListPropsEmptyMedical = {
@@ -129,7 +137,9 @@ const entitiesListPropsEmptyMedical = {
     setPreviewRedaction: jest.fn(),
     currentStatus: 'success' as StatusIndicatorProps.Type,
     phrase: '',
-    setPhrase: jest.fn()
+    setPhrase: jest.fn(),
+    inputPhrase: '',
+    setInputPhrase: jest.fn()
 };
 
 const entitiesListPropsMedicalError = {
@@ -152,7 +162,9 @@ const entitiesListPropsMedicalError = {
     setPreviewRedaction: jest.fn(),
     currentStatus: 'error' as StatusIndicatorProps.Type,
     phrase: '',
-    setPhrase: jest.fn()
+    setPhrase: jest.fn(),
+    inputPhrase: '',
+    setInputPhrase: jest.fn()
 };
 
 const entitiesListPropsMedicalLoading = {
@@ -175,7 +187,9 @@ const entitiesListPropsMedicalLoading = {
     setPreviewRedaction: jest.fn(),
     currentStatus: 'loading' as StatusIndicatorProps.Type,
     phrase: '',
-    setPhrase: jest.fn()
+    setPhrase: jest.fn(),
+    inputPhrase: '',
+    setInputPhrase: jest.fn()
 };
 
 const mockAPI = {

@@ -5,8 +5,8 @@ import { StatusIndicatorProps } from '@cloudscape-design/components';
 import '@testing-library/jest-dom';
 import { render, screen, waitFor } from '@testing-library/react';
 import { API, Auth } from 'aws-amplify';
-import { TEXTRACT_KEY_VALUE_PAIRS, TEXTRACT_RAW_TEXT, TEXTRACT_TABLES } from '../utils/constants';
 import TextractTab from '../components/TextractTab';
+import { TEXTRACT_KEY_VALUE_PAIRS, TEXTRACT_RAW_TEXT, TEXTRACT_TABLES } from '../utils/constants';
 
 type TextractTabProps = {};
 
@@ -23,7 +23,9 @@ const textractPropsLoading = {
     switchPage: mockSwitchPage,
     textractOutputType: TEXTRACT_RAW_TEXT,
     currentStatus: 'loading' as StatusIndicatorProps.Type,
-    retrieveSignedUrl: jest.fn()
+    retrieveSignedUrl: jest.fn(),
+    inputPhrase: '',
+    setInputPhrase: jest.fn()
 };
 
 const textractPropsError = {
@@ -37,7 +39,9 @@ const textractPropsError = {
     switchPage: mockSwitchPage,
     textractOutputType: TEXTRACT_RAW_TEXT,
     currentStatus: 'error' as StatusIndicatorProps.Type,
-    retrieveSignedUrl: jest.fn()
+    retrieveSignedUrl: jest.fn(),
+    inputPhrase: '',
+    setInputPhrase: jest.fn()
 };
 
 jest.mock('react-pdf', () => ({

@@ -16,6 +16,8 @@ type DocumentRendererProps = {
     tables?: TextractTable[];
     previewRedaction?: string;
     retrieveSignedUrl: Function;
+    inputPhrase: string;
+    setInputPhrase: Function;
 };
 
 export default function DocumentRenderer(props: DocumentRendererProps) {
@@ -33,6 +35,8 @@ export default function DocumentRenderer(props: DocumentRendererProps) {
                         tables={props.tables}
                         previewRedaction={props.previewRedaction}
                         retrieveSignedUrl={props.retrieveSignedUrl}
+                        inputPhrase={props.inputPhrase}
+                        setInputPhrase={props.setInputPhrase}
                     />
                 )}
             {(props.selectedDocumentFileType === 'jpg' ||

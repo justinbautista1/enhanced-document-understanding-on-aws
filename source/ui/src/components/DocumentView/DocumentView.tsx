@@ -6,7 +6,6 @@ import './DocumentView.css';
 import { AppLayout, ContentLayout, StatusIndicatorProps, Tabs } from '@cloudscape-design/components';
 import React, { useEffect } from 'react';
 import {
-    COMPREHEND_MEDICAL_SERVICE,
     COMPREHEND_SERVICE,
     EntityTypes,
     TEXTRACT_KEY_VALUE_PAIRS,
@@ -59,7 +58,7 @@ export default function DocumentView(props: DocumentViewProps) {
     const [documentPageCount, setDocumentPageCount] = React.useState<number>(0);
     const [currentPageNumber, setCurrentPageNumber] = React.useState(1);
     const documentProcessingResults = useAppSelector(selectDocumentProcessingResult);
-    const [phrase, setPhrase] = React.useState<string>('John Doe');
+    const [phrase, setPhrase] = React.useState<string>('');
     console.log('documentProcessingResults', documentProcessingResults);
 
     const [selectedEntities, setSelectedEntities] = React.useState<any>({
@@ -193,22 +192,6 @@ export default function DocumentView(props: DocumentViewProps) {
 
         console.log('foundPhrasesByPage', foundPhrasesByPage);
 
-        // const lineEntitiesByPage: any = {}
-        // if (Array.isArray(textract) && foundPhrasesByPage.length) {
-        //     for (let i = 0; i < textract.length; i++) {
-        //         const lineEntities = wordEntitiesIntoPartialLineEntitiesByPage(
-        //             textract[i].Blocks,
-        //             foundPhrasesByPage[i]
-        //         );
-
-        //         if (!lineEntitiesByPage.length) {
-        //            continue;
-        //         }
-        //         lineEntitiesByPage[i + 1] = lineEntities
-        //     }
-        //     console.log('lineEntitiesByPage', lineEntitiesByPage);
-        // }
-
         const hardcodeEntities = lineEntitiesByPage;
         standardEntities.OTHER = {
             ...(standardEntities.OTHER || {}),
@@ -224,7 +207,7 @@ export default function DocumentView(props: DocumentViewProps) {
             piiEntities: documentProcessingResults.comprehendPiiResponse,
             textractDetectResponse: documentProcessingResults.textractDetectResponse
         };
-    }, [documentProcessingResults, props.textractDetectResponse]);
+    }, [documentProcessingResults, props.textractDetectResponse, phrase]);
 
     useEffect(() => {
         props.setSelectedDocumentId(window.sessionStorage.getItem('selectedDocumentId') || '');
@@ -326,7 +309,7 @@ export default function DocumentView(props: DocumentViewProps) {
                     documentPageCount={documentPageCount}
                     currentPageNumber={currentPageNumber}
                     switchPage={switchPage}
-                    comprehendService={COMPREHEND_MEDICAL_SERVICE}
+                    comprehendService={COMPREHEND_SERVICE}
                     entityType={EntityTypes.MEDICAL_ENTITY}
                     selectedDocumentId={props.selectedDocumentId}
                     selectedCaseId={props.selectedCaseId}

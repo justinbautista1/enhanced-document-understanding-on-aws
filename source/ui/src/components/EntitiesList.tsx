@@ -45,6 +45,8 @@ type EntitiesListProps = {
     currentStatus: StatusIndicatorProps.Type | undefined;
     phrase: string;
     setPhrase: Function;
+    inputPhrase: string;
+    setInputPhrase: Function;
 };
 
 type EntityItemProps = {
@@ -240,23 +242,15 @@ const EntitiesList: React.FC<EntitiesListProps> = (props) => {
                 }
             }
 
-            console.log(props.phrase);
+            const phrasePages = props?.entities?.OTHER?.[props.phrase];
             const phrasesToRedact = {
                 phrases: [
                     {
                         text: props.phrase,
-                        pages: [1]
+                        pages: Object.keys(phrasePages).map((page) => +page)
                     }
                 ]
             };
-            // const phrasesToRedact = {
-            //     phrases: [
-            //         {
-            //             text: 'Acme Corporation has been an industry leader for over 25 years. We take pride in fostering a work environment where employees thrive professionally and personally. For any troubleshooting during your first week, feel free to connect with our IT administrator, John Doe, located on the third floor of the main office.',
-            //             pages: [1]
-            //         }
-            //     ]
-            // };
 
             const textsToRedact = Object.assign({}, entitiesToRedact, phrasesToRedact);
             console.log('textsToRedact', textsToRedact);
@@ -439,6 +433,22 @@ const EntitiesList: React.FC<EntitiesListProps> = (props) => {
             )
         }));
 
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        const standard = props.selectedEntities['entity-standard'];
+        const updatedStandard = standard.filter((entity: string[]) => entity[1] !== props.phrase);
+        let newStandard = [...updatedStandard];
+        if (props.inputPhrase) {
+            newStandard.push(['OTHER', props.inputPhrase]);
+            props.setPhrase(props.inputPhrase);
+        }
+        props.setSelectedEntities({
+            ...props.selectedEntities,
+            ['entity-standard']: newStandard
+        });
+    };
+
     const status = renderStatus(
         props.currentStatus,
         true,
@@ -476,6 +486,15 @@ const EntitiesList: React.FC<EntitiesListProps> = (props) => {
                     </Toggle>
                 </SpaceBetween>
                 <Tabs tabs={mainTabs}></Tabs>
+                <form onSubmit={handleSubmit}>
+                    <textarea
+                        rows={10}
+                        cols={50}
+                        value={props.inputPhrase}
+                        onChange={(e) => props.setInputPhrase(e.target.value)}
+                    />
+                    <button type="submit">Submit</button>
+                </form>
             </div>
         );
     }

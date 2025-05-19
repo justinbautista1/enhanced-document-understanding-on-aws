@@ -3,8 +3,8 @@
 
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
-import { marks1, tables } from './test_data';
 import DocumentRenderer from '../components/DocumentRenderer/DocumentRenderer';
+import { marks1, tables } from './test_data';
 
 jest.mock('react-pdf', () => ({
     pdfjs: { GlobalWorkerOptions: { workerSrc: 'abc' } },
@@ -39,6 +39,8 @@ describe('DocumentRenderer component', () => {
                 marks={marks1}
                 tables={tables}
                 retrieveSignedUrl={jest.fn()}
+                inputPhrase=""
+                setInputPhrase={jest.fn()}
             />
         );
         expect(await screen.findByText('PDF load failed. Retrying...')).toBeInTheDocument();
@@ -53,6 +55,8 @@ describe('DocumentRenderer component', () => {
                 marks={marks1}
                 tables={tables}
                 retrieveSignedUrl={jest.fn()}
+                inputPhrase=""
+                setInputPhrase={jest.fn()}
             />
         );
         expect(screen.getByTestId('image')).toBeInTheDocument();
@@ -66,6 +70,8 @@ describe('DocumentRenderer component', () => {
                 selectedDocumentFileType={selectedDocumentFileType}
                 selectedDocumentUrl={selectedDocumentUrl}
                 retrieveSignedUrl={jest.fn()}
+                inputPhrase=""
+                setInputPhrase={jest.fn()}
             />
         );
         expect(screen.getByText('Invalid file type')).toBeInTheDocument();

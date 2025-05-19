@@ -16,6 +16,8 @@ type PdfProps = {
     tables?: TextractTable[];
     previewRedaction?: string;
     retrieveSignedUrl: Function;
+    inputPhrase: string;
+    setInputPhrase: Function;
 };
 
 export default function PDF(props: PdfProps) {
@@ -52,6 +54,13 @@ export default function PDF(props: PdfProps) {
             </DocumentMarks>
         </div>
     );
+    const handleMouseUp = () => {
+        const selection = window.getSelection()?.toString()?.replace(/\s+/g, ' ')?.trim();
+        if (selection) {
+            console.log('Selected text:', selection);
+            props.setInputPhrase(selection);
+        }
+    };
     return (
         <div className="pdf-viewer" data-testid="pdf-box">
             {props.pdfUrl && (
@@ -61,6 +70,7 @@ export default function PDF(props: PdfProps) {
                     onLoadSuccess={onDocumentLoadSuccess}
                     onLoadError={onDocumentLoadError}
                     error={pdfErrorMessage}
+                    onMouseUp={handleMouseUp}
                 >
                     {pager}
                 </Document>

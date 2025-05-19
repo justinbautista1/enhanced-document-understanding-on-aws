@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Box, Container, StatusIndicatorProps } from '@cloudscape-design/components';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { renderStatus } from '../utils/common-renderers';
 import { BoundingBox } from '../utils/interfaces';
 
@@ -44,6 +44,7 @@ type EntityDetectionTabProps = {
  */
 export default function EntityDetectionTab(props: EntityDetectionTabProps) {
     let documentEntities = getEntitiesToProcess(props.entityType, props);
+    const [inputPhrase, setInputPhrase] = useState<string>('');
 
     const getFilteredArray = useCallback(
         (entityType: string) => {
@@ -157,6 +158,8 @@ export default function EntityDetectionTab(props: EntityDetectionTabProps) {
                         marks={pageEntities}
                         previewRedaction={props.previewRedaction}
                         retrieveSignedUrl={props.retrieveSignedUrl}
+                        inputPhrase={inputPhrase}
+                        setInputPhrase={setInputPhrase}
                     />
                 </Container>
             </div>
@@ -191,6 +194,8 @@ export default function EntityDetectionTab(props: EntityDetectionTabProps) {
                                 currentStatus={props.currentStatus}
                                 phrase={props.phrase}
                                 setPhrase={props.setPhrase}
+                                inputPhrase={inputPhrase}
+                                setInputPhrase={setInputPhrase}
                             />
                         </Box>
                     </div>
