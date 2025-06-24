@@ -98,23 +98,81 @@ const EntityItem: React.FC<EntityItemProps> = ({
                     >
                         {Object.keys(entityObject).map((page) => (
                             <Box data-testid="box-view-entity-page" key={entityKey + ' ' + page + '-key'}>
-                                <SpaceBetween direction="horizontal" size="xs">
-                                    <Checkbox
-                                        checked={
-                                            selectedEntities[entityType]
-                                                ? selectedEntities[entityType].some((subArray: string[]) => {
-                                                      return (
-                                                          subArray.length === entityPath.length + 1 &&
-                                                          subArray.every(
-                                                              (value, index) => value === [...entityPath, page][index]
-                                                          )
-                                                      );
-                                                  })
-                                                : false
-                                        }
-                                        onChange={() => handleCheckboxChange([...entityPath, page])}
-                                    ></Checkbox>
-                                    <span onClick={() => switchPage(+page)}>{'Page ' + page}</span>
+                                <SpaceBetween direction="vertical" size="xs">
+                                    <SpaceBetween direction="horizontal" size="xs">
+                                        <Checkbox
+                                            checked={
+                                                selectedEntities[entityType]
+                                                    ? selectedEntities[entityType].some((subArray: string[]) => {
+                                                          return (
+                                                              subArray.length === entityPath.length + 1 &&
+                                                              subArray.every(
+                                                                  (value, index) =>
+                                                                      value === [...entityPath, page][index]
+                                                              )
+                                                          );
+                                                      })
+                                                    : false
+                                            }
+                                            onChange={() => handleCheckboxChange([...entityPath, page])}
+                                        ></Checkbox>
+                                        <span onClick={() => switchPage(+page)}>{'Page ' + page}</span>
+                                    </SpaceBetween>
+                                    {/* Per-instance checkboxes */}
+                                    {Array.isArray(entityObject[page]) &&
+                                        entityObject[page].map((instance: any, idx: number) => {
+                                            // Extract a snippet: up to 5 words from the instance text
+                                            let snippet = '';
+                                            if (instance.Text) {
+                                                snippet = instance.Text.split(/\s+/).slice(0, 5).join(' ');
+                                            } else if (typeof instance === 'string') {
+                                                snippet = instance.split(/\s+/).slice(0, 5).join(' ');
+                                            } else {
+                                                snippet = 'Instance ' + (idx + 1);
+                                            }
+                                            return (
+                                                <SpaceBetween
+                                                    direction="horizontal"
+                                                    size="xs"
+                                                    key={entityKey + '-' + page + '-instance-' + idx}
+                                                >
+                                                    <Checkbox
+                                                        checked={
+                                                            selectedEntities[entityType]
+                                                                ? selectedEntities[entityType].some(
+                                                                      (subArray: string[]) => {
+                                                                          return (
+                                                                              subArray.length ===
+                                                                                  entityPath.length + 2 &&
+                                                                              subArray.every(
+                                                                                  (value, index) =>
+                                                                                      value ===
+                                                                                      [
+                                                                                          ...entityPath,
+                                                                                          page,
+                                                                                          idx.toString()
+                                                                                      ][index]
+                                                                              )
+                                                                          );
+                                                                      }
+                                                                  )
+                                                                : false
+                                                        }
+                                                        onChange={() =>
+                                                            handleCheckboxChange([...entityPath, page, idx.toString()])
+                                                        }
+                                                    ></Checkbox>
+                                                    <span
+                                                        title={
+                                                            instance.Text ||
+                                                            (typeof instance === 'string' ? instance : undefined)
+                                                        }
+                                                    >
+                                                        {snippet}
+                                                    </span>
+                                                </SpaceBetween>
+                                            );
+                                        })}
                                 </SpaceBetween>
                             </Box>
                         ))}

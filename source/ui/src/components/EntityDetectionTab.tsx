@@ -48,11 +48,18 @@ export default function EntityDetectionTab(props: EntityDetectionTabProps) {
 
     const getFilteredArray = useCallback(
         (entityType: string) => {
+            // Now allow selection at the instance level (4th element: instance index or id)
             return props.selectedEntities[entityType].filter((item: string[]) => {
-                if (item.length > 2 && item[2] !== props.currentPageNumber.toString()) {
-                    return false;
+                // If item has 4 elements, it's an instance selection: [entityType, entityValue, pageNumber, instanceIndex]
+                if (item.length === 4) {
+                    // Only show if current page matches
+                    return item[2] === props.currentPageNumber.toString();
                 }
-
+                // If item has 3 elements, it's a page selection (legacy)
+                if (item.length === 3) {
+                    return item[2] === props.currentPageNumber.toString();
+                }
+                // If item has less, fallback to previous logic
                 if (
                     props.selectedEntities[entityType].some(
                         (otherItem: string[]) =>
@@ -62,12 +69,23 @@ export default function EntityDetectionTab(props: EntityDetectionTabProps) {
                 ) {
                     return false;
                 }
-
                 return true;
             });
         },
         [props.currentPageNumber, props.selectedEntities]
     );
+
+    // New: Get bounding box for a specific instance
+    const getBoundingBoxForEntityInstance = useCallback((entities: any, entityPath: string[]) => {
+        // entityPath: [entityType, entityValue, pageNumber, instanceIndex]
+        let boundingBoxes: BoundingBox[] = [];
+        const [type, value, page, instanceIdx] = entityPath;
+        const pageInstances = entities[type]?.[value]?.[page];
+        if (pageInstances && pageInstances[instanceIdx]) {
+            boundingBoxes = boundingBoxes.concat(pageInstances[instanceIdx].BoundingBoxes);
+        }
+        return boundingBoxes;
+    }, []);
 
     const getBoundingBoxesForEntityPage = useCallback((entities: any, entityPath: string[]) => {
         let boundingBoxes: BoundingBox[] = [];
@@ -113,12 +131,14 @@ export default function EntityDetectionTab(props: EntityDetectionTabProps) {
                 const filteredArray = getFilteredArray(entityType);
                 for (const entityPath of filteredArray) {
                     switch (entityPath.length) {
+                        case 4:
+                            boundingBoxes = boundingBoxes.concat(getBoundingBoxForEntityInstance(entities, entityPath));
+                            break;
                         case 3:
                             boundingBoxes = boundingBoxes.concat(getBoundingBoxesForEntityPage(entities, entityPath));
                             break;
                         case 2:
                             boundingBoxes = boundingBoxes.concat(getBoundingBoxesForEntityValue(entities, entityPath));
-                            console.log('boundingBoxes', boundingBoxes);
                             break;
                         case 1:
                         default:
@@ -128,12 +148,12 @@ export default function EntityDetectionTab(props: EntityDetectionTabProps) {
                 }
             }
         }
-
         return boundingBoxes;
     }, [
         getBoundingBoxesForEntityPage,
         getBoundingBoxesForEntityType,
         getBoundingBoxesForEntityValue,
+        getBoundingBoxForEntityInstance,
         getFilteredArray,
         props
     ]);

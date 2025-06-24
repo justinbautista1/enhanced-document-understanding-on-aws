@@ -89,7 +89,9 @@ export default function DocumentView(props: DocumentViewProps) {
                         Top: textractBlock.Geometry.BoundingBox.Top,
                         Width: textractBlock.Geometry.BoundingBox.Width
                     }
-                ]
+                ],
+                // Add the text if available
+                Text: textractBlock.Text || ''
             };
 
             return entity;
@@ -135,7 +137,8 @@ export default function DocumentView(props: DocumentViewProps) {
                             Top: lines[i].Geometry.BoundingBox.Top,
                             Width: 0
                         }
-                    ]
+                    ],
+                    Text: lines[i].Text || ''
                 };
 
                 for (let j = 0; j < wordEntitiesByPage.length; j++) {
