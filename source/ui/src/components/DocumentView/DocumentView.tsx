@@ -169,14 +169,23 @@ export default function DocumentView(props: DocumentViewProps) {
         const textract: any = documentProcessingResults.textractDetectResponse;
         const foundPhrasesByPage: Record<number, any> = {};
         const lineEntitiesByPage: any = {};
+        const hardcodedPhrases: any[] = ['Compliance', 'Acme'];
+        // Combine inputted phrase and hardcoded phrases
+        const allPhrases = [phrase, ...hardcodedPhrases].filter(Boolean);
 
         if (Array.isArray(textract)) {
-            for (let i = 0; i < textract.length; i++) {
-                const foundPhrases = findPhraseInPage(phrase, textract[i].Blocks);
-                if (!foundPhrases.length) {
-                    continue;
+            for (const searchPhrase of allPhrases) {
+                for (let i = 0; i < textract.length; i++) {
+                    const foundPhrases = findPhraseInPage(searchPhrase, textract[i].Blocks);
+                    if (!foundPhrases.length) {
+                        continue;
+                    }
+                    // Merge found phrases for each page
+                    if (!foundPhrasesByPage[i + 1]) {
+                        foundPhrasesByPage[i + 1] = [];
+                    }
+                    foundPhrasesByPage[i + 1].push(...foundPhrases.flat());
                 }
-                foundPhrasesByPage[i + 1] = foundPhrases.flat();
             }
 
             for (const pageNo of Object.keys(foundPhrasesByPage) as any) {
@@ -190,10 +199,7 @@ export default function DocumentView(props: DocumentViewProps) {
                 }
                 lineEntitiesByPage[pageNo] = lineEntities;
             }
-            console.log('lineEntitiesByPage', lineEntitiesByPage);
         }
-
-        console.log('foundPhrasesByPage', foundPhrasesByPage);
 
         const hardcodeEntities = lineEntitiesByPage;
         standardEntities.OTHER = {
