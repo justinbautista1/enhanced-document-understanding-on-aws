@@ -169,7 +169,7 @@ export default function DocumentView(props: DocumentViewProps) {
         const textract: any = documentProcessingResults.textractDetectResponse;
         const foundPhrasesByPage: Record<number, any> = {};
         const lineEntitiesByPage: any = {};
-        const hardcodedPhrases: any[] = ['Compliance', 'Acme'];
+        const hardcodedPhrases: any[] = ['Compliance'];
         // Combine inputted phrase and hardcoded phrases
         const allPhrases = [phrase, ...hardcodedPhrases].filter(Boolean);
 

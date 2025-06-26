@@ -58,6 +58,7 @@ type EntityItemProps = {
     entityType: string;
     entityObject: any;
     phrase: string; // <-- add phrase prop
+    boldLabel?: boolean; // <-- new prop
 };
 
 const EntityItem: React.FC<EntityItemProps> = ({
@@ -68,7 +69,8 @@ const EntityItem: React.FC<EntityItemProps> = ({
     entityPath,
     entityType,
     entityObject,
-    phrase // <-- use phrase prop
+    phrase, // <-- use phrase prop
+    boldLabel = false // <-- default false
 }) => {
     const handleCheckboxChange = (entityPath: string[]) => {
         handleEntitySelect(entityPath);
@@ -94,7 +96,7 @@ const EntityItem: React.FC<EntityItemProps> = ({
                 </Box>
                 <Box display="inline">
                     <ExpandableSection
-                        headerText={entityKey}
+                        headerText={boldLabel ? <span style={{ fontWeight: 'bold' }}>{entityKey}</span> : entityKey}
                         headingTagOverride="h5"
                         data-testid={'entities-list-expandable-' + entityKey}
                     >
@@ -439,61 +441,112 @@ const EntitiesList: React.FC<EntitiesListProps> = (props) => {
 
     const mainTabs =
         props.entities &&
-        Object.keys(props.entities).map((type) => ({
-            label: (
-                <div>
-                    {type}{' '}
-                    <Badge color="blue" data-testid="badge-entity-count">
-                        {props.selectedEntities[props.entityType]
-                            ? props.selectedEntities[props.entityType].filter(
-                                  (subarray: string[]) => subarray[0] === type && subarray.length === 3
-                              ).length
-                            : 0}
-                    </Badge>
-                </div>
-            ),
-            id: type.replace(/\s/g, ''),
-            content: (
-                <Box data-testid="box-parent-view-entity-title">
-                    {renderStatus(props.currentStatus, true, false, 'An error occurred loading detected entities.', '')}
-                    {isStatusSuccess(props.currentStatus) && (
-                        <SpaceBetween direction="horizontal" size="xs">
-                            <Checkbox
-                                checked={
-                                    props.selectedEntities[props.entityType]
-                                        ? props.selectedEntities[props.entityType].some((subArray: string[]) => {
-                                              return (
-                                                  subArray.length === 1 &&
-                                                  subArray.every((value, index) => value === type)
-                                              );
-                                          })
-                                        : false
-                                }
-                                onChange={() => handleEntitySelect([type])}
-                            ></Checkbox>
-                            <Box variant="h4" display="inline">
-                                All Detected {type} Entities
-                            </Box>
-                        </SpaceBetween>
-                    )}
-
-                    {isStatusSuccess(props.currentStatus) &&
-                        Object.keys(props.entities[type]).map((entity) => (
-                            <EntityItem
-                                key={type + ' ' + entity + '-key'}
-                                entityType={props.entityType}
-                                entityObject={props.entities[type][entity]}
-                                entityKey={entity}
-                                selectedEntities={props.selectedEntities}
-                                handleEntitySelect={handleEntitySelect}
-                                switchPage={props.switchPage}
-                                entityPath={[type, entity]}
-                                phrase={props.phrase} // <-- pass phrase prop
-                            />
-                        ))}
-                </Box>
-            )
-        }));
+        [
+            // Always show Input Phrase tab
+            {
+                label: (
+                    <div>
+                        OTHER
+                        <Badge color="blue" data-testid="badge-entity-count">
+                            {props.selectedEntities[props.entityType]
+                                ? props.selectedEntities[props.entityType].filter(
+                                      (subarray: string[]) =>
+                                          subarray[0] === 'OTHER' &&
+                                          subarray[1] === props.phrase &&
+                                          subarray.length === 3
+                                  ).length
+                                : 0}
+                        </Badge>
+                    </div>
+                ),
+                id: 'InputPhrase',
+                content: (
+                    <Box data-testid="box-parent-view-entity-title">
+                        {props.entities.OTHER && Object.keys(props.entities.OTHER).length > 0 ? (
+                            <>
+                                {/* Show current input phrase first if set and present */}
+                                {props.phrase && props.entities.OTHER[props.phrase] && (
+                                    <EntityItem
+                                        key={'OTHER-' + props.phrase + '-key'}
+                                        entityType={props.entityType}
+                                        entityObject={props.entities.OTHER[props.phrase]}
+                                        entityKey={props.phrase}
+                                        selectedEntities={props.selectedEntities}
+                                        handleEntitySelect={handleEntitySelect}
+                                        switchPage={props.switchPage}
+                                        entityPath={['OTHER', props.phrase]}
+                                        phrase={props.phrase}
+                                        boldLabel={false}
+                                    />
+                                )}
+                                {/* Show all other phrases except the current input phrase, bolded */}
+                                {Object.keys(props.entities.OTHER)
+                                    .filter((phrase) => !props.phrase || phrase !== props.phrase)
+                                    .map((phrase) => (
+                                        <EntityItem
+                                            key={'OTHER-' + phrase + '-key'}
+                                            entityType={props.entityType}
+                                            entityObject={props.entities.OTHER[phrase]}
+                                            entityKey={phrase}
+                                            selectedEntities={props.selectedEntities}
+                                            handleEntitySelect={handleEntitySelect}
+                                            switchPage={props.switchPage}
+                                            entityPath={['OTHER', phrase]}
+                                            phrase={phrase}
+                                            boldLabel={true}
+                                        />
+                                    ))}
+                            </>
+                        ) : (
+                            <span style={{ color: '#888' }}>Enter a phrase and submit to see results here.</span>
+                        )}
+                    </Box>
+                )
+            },
+            // Render all other entity types except OTHER
+            ...Object.keys(props.entities)
+                .filter((type) => type !== 'OTHER')
+                .map((type) => ({
+                    label: (
+                        <div>
+                            {type}{' '}
+                            <Badge color="blue" data-testid="badge-entity-count">
+                                {props.selectedEntities[props.entityType]
+                                    ? props.selectedEntities[props.entityType].filter(
+                                          (subarray: string[]) => subarray[0] === type && subarray.length === 3
+                                      ).length
+                                    : 0}
+                            </Badge>
+                        </div>
+                    ),
+                    id: type.replace(/\s/g, ''),
+                    content: (
+                        <Box data-testid="box-parent-view-entity-title">
+                            {renderStatus(
+                                props.currentStatus,
+                                true,
+                                false,
+                                'An error occurred loading detected entities.',
+                                ''
+                            )}
+                            {isStatusSuccess(props.currentStatus) &&
+                                Object.keys(props.entities[type]).map((entity) => (
+                                    <EntityItem
+                                        key={type + ' ' + entity + '-key'}
+                                        entityType={props.entityType}
+                                        entityObject={props.entities[type][entity]}
+                                        entityKey={entity}
+                                        selectedEntities={props.selectedEntities}
+                                        handleEntitySelect={handleEntitySelect}
+                                        switchPage={props.switchPage}
+                                        entityPath={[type, entity]}
+                                        phrase={props.phrase}
+                                    />
+                                ))}
+                        </Box>
+                    )
+                }))
+        ].filter(Boolean);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
