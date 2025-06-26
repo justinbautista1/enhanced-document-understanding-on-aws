@@ -201,10 +201,10 @@ export default function DocumentView(props: DocumentViewProps) {
             }
         }
 
-        const hardcodeEntities = lineEntitiesByPage;
+        const lineEntitiesByPageAndHardcoded = lineEntitiesByPage;
         standardEntities.OTHER = {
             ...(standardEntities.OTHER || {}),
-            [phrase]: hardcodeEntities
+            [phrase]: lineEntitiesByPageAndHardcoded
         };
 
         return {
