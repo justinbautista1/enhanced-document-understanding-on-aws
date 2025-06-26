@@ -57,6 +57,7 @@ type EntityItemProps = {
     entityPath: string[];
     entityType: string;
     entityObject: any;
+    phrase: string; // <-- add phrase prop
 };
 
 const EntityItem: React.FC<EntityItemProps> = ({
@@ -66,7 +67,8 @@ const EntityItem: React.FC<EntityItemProps> = ({
     switchPage,
     entityPath,
     entityType,
-    entityObject
+    entityObject,
+    phrase // <-- use phrase prop
 }) => {
     const handleCheckboxChange = (entityPath: string[]) => {
         handleEntitySelect(entityPath);
@@ -130,6 +132,7 @@ const EntityItem: React.FC<EntityItemProps> = ({
                                             } else {
                                                 snippet = 'Instance ' + (idx + 1);
                                             }
+
                                             return (
                                                 <SpaceBetween
                                                     direction="horizontal"
@@ -485,6 +488,7 @@ const EntitiesList: React.FC<EntitiesListProps> = (props) => {
                                 handleEntitySelect={handleEntitySelect}
                                 switchPage={props.switchPage}
                                 entityPath={[type, entity]}
+                                phrase={props.phrase} // <-- pass phrase prop
                             />
                         ))}
                 </Box>
