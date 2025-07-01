@@ -169,7 +169,7 @@ export default function DocumentView(props: DocumentViewProps) {
         const textract: any = documentProcessingResults.textractDetectResponse;
         const foundPhrasesByPage: Record<number, any> = {};
         const lineEntitiesByPage: any = {};
-        const hardcodedPhrases: any[] = ['Compliance'];
+        const hardcodedPhrases: any[] = ['Acme'];
         // Combine inputted phrase and hardcoded phrases
         const allPhrases = [phrase, ...hardcodedPhrases].filter(Boolean);
 
@@ -427,6 +427,28 @@ export default function DocumentView(props: DocumentViewProps) {
         }
     ];
 
+    // Chatbot simulation state
+    const [chatInput, setChatInput] = React.useState('');
+    const [chatHistory, setChatHistory] = React.useState<{ sender: 'user' | 'bot'; message: string }[]>([]);
+
+    // Chatbot handler
+    const handleChatSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!chatInput.trim()) return;
+        const userMessage = chatInput.trim();
+        setChatHistory((prev) => [...prev, { sender: 'user', message: userMessage }]);
+        setChatInput('');
+
+        // Hardcoded chatbot response simulation
+        let botMessage = '';
+        if (userMessage.toLowerCase().includes('delete mentions of the company')) {
+            botMessage = 'I found the instances.';
+        } else {
+            botMessage = "Sorry, I didn't understand. Try: 'delete mentions of the company'.";
+        }
+        setChatHistory((prev) => [...prev, { sender: 'bot', message: botMessage }]);
+    };
+
     return (
         <AppLayout
             contentType="dashboard"
@@ -454,6 +476,53 @@ export default function DocumentView(props: DocumentViewProps) {
                 >
                     <div data-testid="document-view-box" className="document-view-box">
                         <Tabs tabs={mainTabs} data-testid="document-view-tabs" />
+                    </div>
+                    {/* Chatbot Simulation Section */}
+                    <div
+                        style={{
+                            marginTop: 32,
+                            padding: 16,
+                            border: '1px solid #ddd',
+                            borderRadius: 8,
+                            maxWidth: 500
+                        }}
+                    >
+                        <h3>Chatbot Simulation</h3>
+                        <div style={{ minHeight: 80, marginBottom: 12 }}>
+                            {chatHistory.map((entry, idx) => (
+                                <div key={idx} style={{ textAlign: entry.sender === 'user' ? 'right' : 'left' }}>
+                                    <span
+                                        style={{
+                                            display: 'inline-block',
+                                            background: entry.sender === 'user' ? '#e0f7fa' : '#f1f8e9',
+                                            padding: '6px 12px',
+                                            borderRadius: 12,
+                                            margin: '2px 0'
+                                        }}
+                                    >
+                                        {entry.message}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                        <form onSubmit={handleChatSubmit} style={{ display: 'flex', gap: 8 }}>
+                            <input
+                                type="text"
+                                value={chatInput}
+                                onChange={(e) => setChatInput(e.target.value)}
+                                placeholder="Type here..."
+                                style={{
+                                    flex: 1,
+                                    padding: 6,
+                                    borderRadius: 6,
+                                    border: '1px solid #ccc'
+                                }}
+                                data-testid="chatbot-input"
+                            />
+                            <button type="submit" style={{ padding: '6px 16px', borderRadius: 6 }}>
+                                Send
+                            </button>
+                        </form>
                     </div>
                 </ContentLayout>
             }
