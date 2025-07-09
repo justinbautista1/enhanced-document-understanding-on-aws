@@ -3,6 +3,8 @@
   "version": "1.1.14",
   "dependencies": {
     "@aws-amplify/ui-react": "^5.3.2",
+    "@azure/identity": "^4.10.2",
+    "@azure/openai": "^2.0.0",
     "@cloudscape-design/components": "^3.0.484",
     "@cloudscape-design/design-tokens": "^3.0.31",
     "@cloudscape-design/global-styles": "^1.0.21",

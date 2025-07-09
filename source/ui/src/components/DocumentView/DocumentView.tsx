@@ -74,15 +74,16 @@ export default function DocumentView(props: DocumentViewProps) {
         setCurrentPageNumber(newPageNumber);
     };
 
-    const openai_client = React.useMemo(
-        () =>
-            new AzureOpenAI({
-                apiKey: process.env.OPENAI_API_KEY || '',
-                endpoint: process.env.OPENAI_ENDPOINT || '',
-                apiVersion: '2024-08-01-preview'
-            }),
-        []
-    );
+    const openai_client = React.useMemo(() => {
+        const apiKey = process.env.REACT_APP_OPENAI_KEY;
+        const endpoint = process.env.REACT_APP_OPENAI_ENDPOINT;
+        const deployment = 'gpt-4.1';
+        const apiVersion = '2024-04-01-preview';
+        const options = { endpoint, apiKey, deployment, apiVersion, dangerouslyAllowBrowser: true };
+
+        console.log(options);
+        return new AzureOpenAI(options);
+    }, []);
 
     const docData = React.useMemo(() => {
         const pairs = getDocumentKeyValuePairs(documentProcessingResults, 'KEY_VALUE_SET');
@@ -442,22 +443,38 @@ export default function DocumentView(props: DocumentViewProps) {
     const [chatInput, setChatInput] = React.useState('');
     const [chatHistory, setChatHistory] = React.useState<{ sender: 'user' | 'bot'; message: string }[]>([]);
 
-    // Chatbot handler
-    const handleChatSubmit = (e: React.FormEvent) => {
+    // Chatbot handler using OpenAI client
+    const handleChatSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!chatInput.trim()) return;
         const userMessage = chatInput.trim();
         setChatHistory((prev) => [...prev, { sender: 'user', message: userMessage }]);
         setChatInput('');
 
-        // Hardcoded chatbot response simulation
-        let botMessage = '';
-        if (userMessage.toLowerCase().includes('delete mentions of the company')) {
-            botMessage = 'I found the instances.';
-        } else {
-            botMessage = "Sorry, I didn't understand. Try: 'delete mentions of the company'.";
+        try {
+            // Prepare messages for OpenAI chat completion with correct typing
+            const messages = [
+                ...chatHistory.map((entry) => ({
+                    role: entry.sender === 'user' ? 'user' : 'assistant',
+                    content: entry.message
+                })),
+                { role: 'user', content: userMessage }
+            ] as Array<{ role: 'user' | 'assistant' | 'system'; content: string }>;
+
+            // @ts-ignore: openai_client may not have types for chat.completions.create
+            const response = await openai_client.chat.completions.create({
+                model: 'gpt-4.1',
+                messages,
+                max_tokens: 256
+            });
+            const botMessage = response.choices?.[0]?.message?.content || 'No response from model.';
+            setChatHistory((prev) => [...prev, { sender: 'bot', message: botMessage }]);
+        } catch (err: any) {
+            setChatHistory((prev) => [
+                ...prev,
+                { sender: 'bot', message: 'Error communicating with LLM: ' + (err?.message || 'Unknown error') }
+            ]);
         }
-        setChatHistory((prev) => [...prev, { sender: 'bot', message: botMessage }]);
     };
 
     return (
