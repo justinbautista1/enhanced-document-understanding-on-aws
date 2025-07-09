@@ -5,6 +5,7 @@ import './DocumentView.css';
 
 import { AppLayout, ContentLayout, StatusIndicatorProps, Tabs } from '@cloudscape-design/components';
 import React, { useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import {
     COMPREHEND_SERVICE,
     EntityTypes,
@@ -85,6 +86,20 @@ export default function DocumentView(props: DocumentViewProps) {
     }, []);
 
     const docData = React.useMemo(() => {
+        // Print all text blocks from textractDetectResponse to console and combine into one string
+        let allTextractTextBlocks: string[] = [];
+        if (documentProcessingResults && Array.isArray(documentProcessingResults.textractDetectResponse)) {
+            documentProcessingResults.textractDetectResponse.forEach((page, pageIdx) => {
+                if (Array.isArray(page.Blocks)) {
+                    const textBlocks = page.Blocks.filter(
+                        (block: any) => block.BlockType === 'LINE' || block.BlockType === 'WORD'
+                    );
+                    const texts = textBlocks.map((b: any) => b.Text);
+                    allTextractTextBlocks.push(...texts);
+                    console.log(`Textract Page ${pageIdx + 1} Text Blocks:`, texts);
+                }
+            });
+        }
         const pairs = getDocumentKeyValuePairs(documentProcessingResults, 'KEY_VALUE_SET');
         const tables = getDocumentTables(documentProcessingResults, 'TABLE');
         const lines = getDocumentLines(documentProcessingResults, 'LINE');
@@ -247,12 +262,18 @@ export default function DocumentView(props: DocumentViewProps) {
         // Print both to console
         console.log('ALL ENTITIES:', allEntities);
 
-        // Format entity list for LLM system prompt
+        // Format entity list and all text blocks for LLM system prompt
+        const textractTextCombined = allTextractTextBlocks.join(' ');
         const formattedEntitiesForPrompt =
             allSecondLevelKeys.length > 0
                 ? `Document contains the following extracted entity texts (unique, from all entity types):\n- ` +
-                  allSecondLevelKeys.join('\n- ')
+                  allSecondLevelKeys.join('\n- ') +
+                  (textractTextCombined
+                      ? `\n\nFull document text (all lines and words, space-separated):\n${textractTextCombined}`
+                      : '')
                 : 'No entity texts were extracted from the document.';
+        // Print the prompt to the console for inspection
+        console.log('LLM SYSTEM PROMPT FOR CHAT SIMULATION:', formattedEntitiesForPrompt);
 
         return {
             pairs,
@@ -502,8 +523,7 @@ export default function DocumentView(props: DocumentViewProps) {
             // @ts-ignore: openai_client may not have types for chat.completions.create
             const response = await openai_client.chat.completions.create({
                 model: 'gpt-4.1',
-                messages,
-                max_tokens: 256
+                messages
             });
             const botMessage = response.choices?.[0]?.message?.content || 'No response from model.';
             setChatHistory((prev) => [...prev, { sender: 'bot', message: botMessage }]);
@@ -563,10 +583,16 @@ export default function DocumentView(props: DocumentViewProps) {
                                             background: entry.sender === 'user' ? '#e0f7fa' : '#f1f8e9',
                                             padding: '6px 12px',
                                             borderRadius: 12,
-                                            margin: '2px 0'
+                                            margin: '2px 0',
+                                            maxWidth: 400,
+                                            wordBreak: 'break-word'
                                         }}
                                     >
-                                        {entry.message}
+                                        {entry.sender === 'bot' ? (
+                                            <ReactMarkdown>{entry.message}</ReactMarkdown>
+                                        ) : (
+                                            entry.message
+                                        )}
                                     </span>
                                 </div>
                             ))}
