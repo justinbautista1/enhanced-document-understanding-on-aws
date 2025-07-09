@@ -19,6 +19,7 @@ import {
     getDocumentTables
 } from '../../utils/document';
 
+import { AzureOpenAI } from 'openai';
 import { useAppSelector } from '../../store/hooks/hooks';
 import {
     useLazyDocumentToDownloadQuery,
@@ -72,6 +73,16 @@ export default function DocumentView(props: DocumentViewProps) {
     const switchPage = (newPageNumber: number) => {
         setCurrentPageNumber(newPageNumber);
     };
+
+    const openai_client = React.useMemo(
+        () =>
+            new AzureOpenAI({
+                apiKey: process.env.OPENAI_API_KEY || '',
+                endpoint: process.env.OPENAI_ENDPOINT || '',
+                apiVersion: '2024-08-01-preview'
+            }),
+        []
+    );
 
     const docData = React.useMemo(() => {
         const pairs = getDocumentKeyValuePairs(documentProcessingResults, 'KEY_VALUE_SET');

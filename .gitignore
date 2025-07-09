@@ -17,6 +17,7 @@ __pycache__/
 *.egg-info
 *.egg
 
+.env
 codebuild_build.sh
 .vscode/settings.json
 .vscode/launch.json
