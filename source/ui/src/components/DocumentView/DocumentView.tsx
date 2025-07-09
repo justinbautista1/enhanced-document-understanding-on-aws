@@ -81,7 +81,6 @@ export default function DocumentView(props: DocumentViewProps) {
         const apiVersion = '2024-04-01-preview';
         const options = { endpoint, apiKey, deployment, apiVersion, dangerouslyAllowBrowser: true };
 
-        console.log(options);
         return new AzureOpenAI(options);
     }, []);
 
@@ -105,7 +104,6 @@ export default function DocumentView(props: DocumentViewProps) {
                 // Add the text if available
                 Text: textractBlock.Text || ''
             };
-
             return entity;
         };
 
@@ -113,32 +111,26 @@ export default function DocumentView(props: DocumentViewProps) {
             const words = textractPageBlocks.filter((block: any) => block.BlockType === 'WORD');
             const foundPhrases = [];
             const phraseWords = phrase.trim().toLowerCase().split(/\s+/);
-
             for (let i = 0; i < words.length - phraseWords.length; i++) {
                 let found = true;
-
                 for (let j = 0; j < phraseWords.length; j++) {
                     if (!words[i + j].Text.toLowerCase().includes(phraseWords[j])) {
                         found = false;
                         break;
                     }
                 }
-
                 if (found) {
                     const foundPhraseWords = words.slice(i, i + phraseWords.length);
                     const entities = foundPhraseWords.map((word: any) => textractBlockToEntity(word));
-
                     foundPhrases.push(entities);
                 }
             }
-
             return foundPhrases;
         };
 
         const wordEntitiesIntoPartialLineEntitiesByPage = (textractPageBlocks: any, wordEntitiesByPage: any) => {
             const lines = textractPageBlocks.filter((block: any) => block.BlockType === 'LINE');
             const lineEntities = [];
-
             for (let i = 0; i < lines.length; i++) {
                 const lineEntity = {
                     Score: lines[i].Confidence / 100,
@@ -152,29 +144,24 @@ export default function DocumentView(props: DocumentViewProps) {
                     ],
                     Text: lines[i].Text || ''
                 };
-
                 for (let j = 0; j < wordEntitiesByPage.length; j++) {
                     const wordEntity = wordEntitiesByPage[j];
                     const top = lineEntity.BoundingBoxes[0].Top;
                     const bottom = lineEntity.BoundingBoxes[0].Height + top;
-
                     if (bottom >= wordEntity.BoundingBoxes[0].Top && wordEntity.BoundingBoxes[0].Top >= top) {
                         if (wordEntity.BoundingBoxes[0].Left < lineEntity.BoundingBoxes[0].Left) {
                             lineEntity.BoundingBoxes[0].Left = wordEntity.BoundingBoxes[0].Left;
                         }
-
                         const spaces =
                             wordEntity.BoundingBoxes[0].Left -
                             (lineEntity.BoundingBoxes[0].Width + lineEntity.BoundingBoxes[0].Left);
                         lineEntity.BoundingBoxes[0].Width += wordEntity.BoundingBoxes[0].Width + spaces;
                     }
                 }
-
                 if (lineEntity.BoundingBoxes[0].Width > 0) {
                     lineEntities.push(lineEntity);
                 }
             }
-
             return lineEntities;
         };
 
@@ -199,13 +186,11 @@ export default function DocumentView(props: DocumentViewProps) {
                     foundPhrasesByPage[i + 1].push(...foundPhrases.flat());
                 }
             }
-
             for (const pageNo of Object.keys(foundPhrasesByPage) as any) {
                 const lineEntities = wordEntitiesIntoPartialLineEntitiesByPage(
                     textract[pageNo - 1].Blocks,
                     foundPhrasesByPage[pageNo]
                 );
-
                 if (!lineEntities.length) {
                     continue;
                 }
@@ -219,6 +204,56 @@ export default function DocumentView(props: DocumentViewProps) {
             [phrase]: lineEntitiesByPageAndHardcoded
         };
 
+        // Collect all entities from standard, medical, and pii
+        let allEntities: any[] = [];
+        if (standardEntities) {
+            Object.values(standardEntities).forEach((v) => {
+                if (Array.isArray(v)) allEntities.push(...v);
+                else if (typeof v === 'object' && v !== null) allEntities.push(...Object.values(v).flat());
+            });
+        }
+        if (documentProcessingResults.comprehendMedicalResponse) {
+            Object.values(documentProcessingResults.comprehendMedicalResponse).forEach((v) => {
+                if (Array.isArray(v)) allEntities.push(...v);
+                else if (typeof v === 'object' && v !== null) allEntities.push(...Object.values(v).flat());
+            });
+        }
+        if (documentProcessingResults.comprehendPiiResponse) {
+            Object.values(documentProcessingResults.comprehendPiiResponse).forEach((v) => {
+                if (Array.isArray(v)) allEntities.push(...v);
+                else if (typeof v === 'object' && v !== null) allEntities.push(...Object.values(v).flat());
+            });
+        }
+
+        // Gather all 2nd-level dictionary keys from all entity result objects into a single list
+        const gatherSecondLevelKeys = (...objs: any[]) => {
+            const allKeys: string[] = [];
+            objs.forEach((obj) => {
+                if (!obj || typeof obj !== 'object') return;
+                Object.values(obj).forEach((v) => {
+                    if (v && typeof v === 'object') {
+                        allKeys.push(...Object.keys(v));
+                    }
+                });
+            });
+            return allKeys;
+        };
+        const allSecondLevelKeys = gatherSecondLevelKeys(
+            documentProcessingResults.comprehendGenericResponse,
+            documentProcessingResults.comprehendMedicalResponse,
+            documentProcessingResults.comprehendPiiResponse
+        );
+        console.log('ALL 2nd-level keys (entity texts) combined:', allSecondLevelKeys);
+        // Print both to console
+        console.log('ALL ENTITIES:', allEntities);
+
+        // Format entity list for LLM system prompt
+        const formattedEntitiesForPrompt =
+            allSecondLevelKeys.length > 0
+                ? `Document contains the following extracted entity texts (unique, from all entity types):\n- ` +
+                  allSecondLevelKeys.join('\n- ')
+                : 'No entity texts were extracted from the document.';
+
         return {
             pairs,
             lines,
@@ -226,7 +261,8 @@ export default function DocumentView(props: DocumentViewProps) {
             standardEntities,
             medicalEntities: documentProcessingResults.comprehendMedicalResponse,
             piiEntities: documentProcessingResults.comprehendPiiResponse,
-            textractDetectResponse: documentProcessingResults.textractDetectResponse
+            textractDetectResponse: documentProcessingResults.textractDetectResponse,
+            formattedEntitiesForPrompt
         };
     }, [documentProcessingResults, props.textractDetectResponse, phrase]);
 
@@ -452,8 +488,10 @@ export default function DocumentView(props: DocumentViewProps) {
         setChatInput('');
 
         try {
-            // Prepare messages for OpenAI chat completion with correct typing
+            // System prompt includes the extracted entity texts for LLM context
+            const systemPrompt = docData.formattedEntitiesForPrompt;
             const messages = [
+                { role: 'system', content: systemPrompt },
                 ...chatHistory.map((entry) => ({
                     role: entry.sender === 'user' ? 'user' : 'assistant',
                     content: entry.message
