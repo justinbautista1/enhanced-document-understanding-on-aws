@@ -570,7 +570,8 @@ export default function DocumentView(props: DocumentViewProps) {
                             padding: 16,
                             border: '1px solid #ddd',
                             borderRadius: 8,
-                            maxWidth: 500
+                            width: '100%',
+                            boxSizing: 'border-box'
                         }}
                     >
                         <h3>Chatbot Simulation</h3>
@@ -581,11 +582,14 @@ export default function DocumentView(props: DocumentViewProps) {
                                         style={{
                                             display: 'inline-block',
                                             background: entry.sender === 'user' ? '#e0f7fa' : '#f1f8e9',
-                                            padding: '6px 12px',
+                                            padding: '20px 30px',
                                             borderRadius: 12,
-                                            margin: '2px 0',
-                                            maxWidth: 400,
-                                            wordBreak: 'break-word'
+                                            margin: '5px 0',
+                                            maxWidth: '60vw',
+                                            minWidth: 120,
+                                            wordBreak: 'break-word',
+                                            overflowWrap: 'break-word',
+                                            whiteSpace: 'pre-line'
                                         }}
                                     >
                                         {entry.sender === 'bot' ? (
