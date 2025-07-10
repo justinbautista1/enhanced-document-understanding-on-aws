@@ -575,21 +575,38 @@ export default function DocumentView(props: DocumentViewProps) {
                         }}
                     >
                         <h3>Chatbot Simulation</h3>
-                        <div style={{ minHeight: 80, marginBottom: 12 }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'center',
+                                minHeight: 80,
+                                marginBottom: 12
+                            }}
+                        >
                             {chatHistory.map((entry, idx) => (
-                                <div key={idx} style={{ textAlign: entry.sender === 'user' ? 'right' : 'left' }}>
+                                <div
+                                    key={idx}
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        alignItems: 'start',
+                                        marginTop: 12
+                                    }}
+                                >
                                     <span
                                         style={{
-                                            display: 'inline-block',
-                                            background: entry.sender === 'user' ? '#e0f7fa' : '#f1f8e9',
-                                            padding: '20px 30px',
-                                            borderRadius: 12,
-                                            margin: '5px 0',
-                                            maxWidth: '60vw',
-                                            minWidth: 120,
-                                            wordBreak: 'break-word',
-                                            overflowWrap: 'break-word',
-                                            whiteSpace: 'pre-line'
+                                            borderRadius: '50%',
+                                            width: '25px',
+                                            height: '25px',
+                                            backgroundColor: entry.sender === 'user' ? 'red' : 'blue'
+                                        }}
+                                    ></span>
+                                    <span
+                                        style={{
+                                            padding: '0px 8px',
+                                            margin: 0,
+                                            maxWidth: '75vw'
                                         }}
                                     >
                                         {entry.sender === 'bot' ? (
