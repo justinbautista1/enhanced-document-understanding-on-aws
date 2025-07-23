@@ -85,6 +85,93 @@ export default function DocumentView(props: DocumentViewProps) {
         return new AzureOpenAI(options);
     }, []);
 
+    // Chatbot simulation state
+    const [chatInput, setChatInput] = React.useState('');
+    const [chatHistory, setChatHistory] = React.useState<{ sender: 'user' | 'bot'; message: string }[]>([]);
+    // State to accumulate found entities/phrases in all bot responses
+    const [accumulatedFoundEntities, setAccumulatedFoundEntities] = React.useState<string[]>([]);
+
+    // Chatbot handler using OpenAI client
+    const handleChatSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!chatInput.trim()) return;
+        const userMessage = chatInput.trim();
+        setChatHistory((prev) => [...prev, { sender: 'user', message: userMessage }]);
+        setChatInput('');
+
+        try {
+            // System prompt includes the extracted entity texts for LLM context
+            const systemPrompt = docData.formattedEntitiesForPrompt;
+            const messages = [
+                { role: 'system', content: systemPrompt },
+                ...chatHistory.map((entry) => ({
+                    role: entry.sender === 'user' ? 'user' : 'assistant',
+                    content: entry.message
+                })),
+                { role: 'user', content: userMessage }
+            ] as Array<{ role: 'user' | 'assistant' | 'system'; content: string }>;
+
+            // @ts-ignore: openai_client may not have types for chat.completions.create
+            const response = await openai_client.chat.completions.create({
+                model: 'gpt-4.1',
+                messages
+            });
+            const botMessage = response.choices?.[0]?.message?.content || 'No response from model.';
+            // Find entities/phrases in botMessage and update state
+            const allEntities = (() => {
+                // Gather all entities/phrases from docData
+                let entities: string[] = [];
+                // Add 2nd-level keys from standard, medical, pii entities
+                const gatherSecondLevelKeys = (obj: any) => {
+                    if (!obj || typeof obj !== 'object') return [];
+                    let keys: string[] = [];
+                    Object.values(obj).forEach((v) => {
+                        if (v && typeof v === 'object') {
+                            keys.push(...Object.keys(v));
+                        }
+                    });
+                    return keys;
+                };
+                entities.push(...gatherSecondLevelKeys(docData.standardEntities));
+                entities.push(...gatherSecondLevelKeys(docData.medicalEntities));
+                entities.push(...gatherSecondLevelKeys(docData.piiEntities));
+                // Add hardcoded phrases and phrase input
+                const hardcodedPhrases: string[] = [];
+                if (phrase) entities.push(phrase);
+                entities.push(...hardcodedPhrases);
+                // Remove duplicates and empty
+                return Array.from(new Set(entities.filter(Boolean)));
+            })();
+            const foundEntities = allEntities.filter((entity) =>
+                botMessage.toLowerCase().includes(entity.toLowerCase())
+            );
+            // Accumulate found entities, avoiding duplicates
+            setAccumulatedFoundEntities((prev) => {
+                const newSet = new Set(prev);
+                foundEntities.forEach((entity) => {
+                    if (entity && !newSet.has(entity)) {
+                        newSet.add(entity);
+                    }
+                });
+
+                return Array.from(newSet);
+            });
+            setChatHistory((prev) => [...prev, { sender: 'bot', message: botMessage }]);
+        } catch (err: any) {
+            setChatHistory((prev) => [
+                ...prev,
+                { sender: 'bot', message: 'Error communicating with LLM: ' + (err?.message || 'Unknown error') }
+            ]);
+        }
+    };
+    // Print accumulated found entities/phrases to console whenever it changes
+    React.useEffect(() => {
+        if (accumulatedFoundEntities.length > 0) {
+            console.log('Entities/phrases found in bot responses (accumulated):', accumulatedFoundEntities);
+        }
+        console.log(selectedEntities);
+    }, [accumulatedFoundEntities]);
+
     const docData = React.useMemo(() => {
         // Print all text blocks from textractDetectResponse to console and combine into one string
         let allTextractTextBlocks: string[] = [];
@@ -104,6 +191,7 @@ export default function DocumentView(props: DocumentViewProps) {
         const tables = getDocumentTables(documentProcessingResults, 'TABLE');
         const lines = getDocumentLines(documentProcessingResults, 'LINE');
         const standardEntities = { ...documentProcessingResults.comprehendGenericResponse } as any;
+        console.log('standardEntities', standardEntities);
 
         const textractBlockToEntity = (textractBlock: any) => {
             const entity = {
@@ -183,12 +271,7 @@ export default function DocumentView(props: DocumentViewProps) {
         const textract: any = documentProcessingResults.textractDetectResponse;
         const foundPhrasesByPage: Record<number, any> = {};
         const lineEntitiesByPage: any = {};
-        const hardcodedPhrases: any[] = [
-            'john.doe@acmecorp.com',
-            'jane.smith@acmecorp.com',
-            '(555) 123-4567',
-            '(555) 765-4321'
-        ];
+        const hardcodedPhrases: any[] = [];
         // Combine inputted phrase and hardcoded phrases
         const allPhrases = [phrase, ...hardcodedPhrases].filter(Boolean);
 
@@ -223,6 +306,7 @@ export default function DocumentView(props: DocumentViewProps) {
             // ...(standardEntities.OTHER || {}),
             [phrase]: lineEntitiesByPageAndHardcoded
         };
+        console.log('standardEntities', standardEntities);
 
         // Collect all entities from standard, medical, and pii
         let allEntities: any[] = [];
@@ -500,91 +584,6 @@ export default function DocumentView(props: DocumentViewProps) {
             )
         }
     ];
-
-    // Chatbot simulation state
-    const [chatInput, setChatInput] = React.useState('');
-    const [chatHistory, setChatHistory] = React.useState<{ sender: 'user' | 'bot'; message: string }[]>([]);
-    // State to accumulate found entities/phrases in all bot responses
-    const [accumulatedFoundEntities, setAccumulatedFoundEntities] = React.useState<string[]>([]);
-
-    // Chatbot handler using OpenAI client
-    const handleChatSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!chatInput.trim()) return;
-        const userMessage = chatInput.trim();
-        setChatHistory((prev) => [...prev, { sender: 'user', message: userMessage }]);
-        setChatInput('');
-
-        try {
-            // System prompt includes the extracted entity texts for LLM context
-            const systemPrompt = docData.formattedEntitiesForPrompt;
-            const messages = [
-                { role: 'system', content: systemPrompt },
-                ...chatHistory.map((entry) => ({
-                    role: entry.sender === 'user' ? 'user' : 'assistant',
-                    content: entry.message
-                })),
-                { role: 'user', content: userMessage }
-            ] as Array<{ role: 'user' | 'assistant' | 'system'; content: string }>;
-
-            // @ts-ignore: openai_client may not have types for chat.completions.create
-            const response = await openai_client.chat.completions.create({
-                model: 'gpt-4.1',
-                messages
-            });
-            const botMessage = response.choices?.[0]?.message?.content || 'No response from model.';
-            // Find entities/phrases in botMessage and update state
-            const allEntities = (() => {
-                // Gather all entities/phrases from docData
-                let entities: string[] = [];
-                // Add 2nd-level keys from standard, medical, pii entities
-                const gatherSecondLevelKeys = (obj: any) => {
-                    if (!obj || typeof obj !== 'object') return [];
-                    let keys: string[] = [];
-                    Object.values(obj).forEach((v) => {
-                        if (v && typeof v === 'object') {
-                            keys.push(...Object.keys(v));
-                        }
-                    });
-                    return keys;
-                };
-                entities.push(...gatherSecondLevelKeys(docData.standardEntities));
-                entities.push(...gatherSecondLevelKeys(docData.medicalEntities));
-                entities.push(...gatherSecondLevelKeys(docData.piiEntities));
-                // Add hardcoded phrases and phrase input
-                const hardcodedPhrases: string[] = [];
-                if (phrase) entities.push(phrase);
-                entities.push(...hardcodedPhrases);
-                // Remove duplicates and empty
-                return Array.from(new Set(entities.filter(Boolean)));
-            })();
-            const foundEntities = allEntities.filter((entity) =>
-                botMessage.toLowerCase().includes(entity.toLowerCase())
-            );
-            // Accumulate found entities, avoiding duplicates
-            setAccumulatedFoundEntities((prev) => {
-                const newSet = new Set(prev);
-                foundEntities.forEach((entity) => {
-                    if (entity && !newSet.has(entity)) {
-                        newSet.add(entity);
-                    }
-                });
-                return Array.from(newSet);
-            });
-            setChatHistory((prev) => [...prev, { sender: 'bot', message: botMessage }]);
-        } catch (err: any) {
-            setChatHistory((prev) => [
-                ...prev,
-                { sender: 'bot', message: 'Error communicating with LLM: ' + (err?.message || 'Unknown error') }
-            ]);
-        }
-    };
-    // Print accumulated found entities/phrases to console whenever it changes
-    React.useEffect(() => {
-        if (accumulatedFoundEntities.length > 0) {
-            console.log('Entities/phrases found in bot responses (accumulated):', accumulatedFoundEntities);
-        }
-    }, [accumulatedFoundEntities]);
 
     return (
         <AppLayout
