@@ -183,7 +183,12 @@ export default function DocumentView(props: DocumentViewProps) {
         const textract: any = documentProcessingResults.textractDetectResponse;
         const foundPhrasesByPage: Record<number, any> = {};
         const lineEntitiesByPage: any = {};
-        const hardcodedPhrases: any[] = ['Acme'];
+        const hardcodedPhrases: any[] = [
+            'john.doe@acmecorp.com',
+            'jane.smith@acmecorp.com',
+            '(555) 123-4567',
+            '(555) 765-4321'
+        ];
         // Combine inputted phrase and hardcoded phrases
         const allPhrases = [phrase, ...hardcodedPhrases].filter(Boolean);
 
@@ -214,8 +219,8 @@ export default function DocumentView(props: DocumentViewProps) {
         }
 
         const lineEntitiesByPageAndHardcoded = lineEntitiesByPage;
-        standardEntities.OTHER = {
-            ...(standardEntities.OTHER || {}),
+        standardEntities.LLM = {
+            // ...(standardEntities.OTHER || {}),
             [phrase]: lineEntitiesByPageAndHardcoded
         };
 
