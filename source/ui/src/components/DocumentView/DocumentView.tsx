@@ -504,6 +504,8 @@ export default function DocumentView(props: DocumentViewProps) {
     // Chatbot simulation state
     const [chatInput, setChatInput] = React.useState('');
     const [chatHistory, setChatHistory] = React.useState<{ sender: 'user' | 'bot'; message: string }[]>([]);
+    // State to accumulate found entities/phrases in all bot responses
+    const [accumulatedFoundEntities, setAccumulatedFoundEntities] = React.useState<string[]>([]);
 
     // Chatbot handler using OpenAI client
     const handleChatSubmit = async (e: React.FormEvent) => {
@@ -531,7 +533,7 @@ export default function DocumentView(props: DocumentViewProps) {
                 messages
             });
             const botMessage = response.choices?.[0]?.message?.content || 'No response from model.';
-            // Find entities/phrases in botMessage and print to console
+            // Find entities/phrases in botMessage and update state
             const allEntities = (() => {
                 // Gather all entities/phrases from docData
                 let entities: string[] = [];
@@ -550,12 +552,7 @@ export default function DocumentView(props: DocumentViewProps) {
                 entities.push(...gatherSecondLevelKeys(docData.medicalEntities));
                 entities.push(...gatherSecondLevelKeys(docData.piiEntities));
                 // Add hardcoded phrases and phrase input
-                const hardcodedPhrases = [
-                    'john.doe@acmecorp.com',
-                    'jane.smith@acmecorp.com',
-                    '(555) 123-4567',
-                    '(555) 765-4321'
-                ];
+                const hardcodedPhrases: string[] = [];
                 if (phrase) entities.push(phrase);
                 entities.push(...hardcodedPhrases);
                 // Remove duplicates and empty
@@ -564,9 +561,16 @@ export default function DocumentView(props: DocumentViewProps) {
             const foundEntities = allEntities.filter((entity) =>
                 botMessage.toLowerCase().includes(entity.toLowerCase())
             );
-            if (foundEntities.length > 0) {
-                console.log('Entities/phrases found in bot response:', foundEntities);
-            }
+            // Accumulate found entities, avoiding duplicates
+            setAccumulatedFoundEntities((prev) => {
+                const newSet = new Set(prev);
+                foundEntities.forEach((entity) => {
+                    if (entity && !newSet.has(entity)) {
+                        newSet.add(entity);
+                    }
+                });
+                return Array.from(newSet);
+            });
             setChatHistory((prev) => [...prev, { sender: 'bot', message: botMessage }]);
         } catch (err: any) {
             setChatHistory((prev) => [
@@ -575,6 +579,12 @@ export default function DocumentView(props: DocumentViewProps) {
             ]);
         }
     };
+    // Print accumulated found entities/phrases to console whenever it changes
+    React.useEffect(() => {
+        if (accumulatedFoundEntities.length > 0) {
+            console.log('Entities/phrases found in bot responses (accumulated):', accumulatedFoundEntities);
+        }
+    }, [accumulatedFoundEntities]);
 
     return (
         <AppLayout
