@@ -62,7 +62,7 @@ export default function DocumentView(props: DocumentViewProps) {
     const [currentPageNumber, setCurrentPageNumber] = React.useState(1);
     const documentProcessingResults = useAppSelector(selectDocumentProcessingResult);
     const [phrase, setPhrase] = React.useState<string>('');
-    console.log('documentProcessingResults', documentProcessingResults);
+    // console.log('documentProcessingResults', documentProcessingResults);
 
     const [selectedEntities, setSelectedEntities] = React.useState<any>({
         [EntityTypes.ENTITY_STANDARD]: [],
@@ -572,6 +572,32 @@ export default function DocumentView(props: DocumentViewProps) {
                 });
                 return Array.from(newSet);
             });
+            console.log(docData.standardEntities);
+
+            // Add accumulatedFoundEntities found in docData.standardEntities to selectedEntities
+            const newEntityTuples: any[] = [];
+            if (docData && docData.standardEntities) {
+                Object.entries(docData.standardEntities).forEach(([entityType, entityObj]: [string, any]) => {
+                    if (entityObj && typeof entityObj === 'object') {
+                        Object.entries(entityObj).forEach(([entityName, pagesObj]: [string, any]) => {
+                            if (accumulatedFoundEntities.includes(entityName)) {
+                                if (pagesObj && typeof pagesObj === 'object') {
+                                    Object.keys(pagesObj).forEach((page) => {
+                                        newEntityTuples.push([entityType, entityName, page]);
+                                    });
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+            if (newEntityTuples.length > 0) {
+                setSelectedEntities((prev: any) => ({
+                    ...prev,
+                    ['entity-standard']: [...prev['entity-standard'], ...newEntityTuples]
+                }));
+            }
+
             setChatHistory((prev) => [...prev, { sender: 'bot', message: botMessage }]);
         } catch (err: any) {
             setChatHistory((prev) => [

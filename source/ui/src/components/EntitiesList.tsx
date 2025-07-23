@@ -413,7 +413,10 @@ const EntitiesList: React.FC<EntitiesListProps> = (props) => {
 
             props.setSelectedEntities({
                 ...props.selectedEntities,
-                [props.entityType]: [...props.selectedEntities[props.entityType], ...newSelectedEntities]
+                [props.entityType]: [
+                    ...props.selectedEntities[props.entityType],
+                    ...newSelectedEntities,
+                ]
             });
         }
     };

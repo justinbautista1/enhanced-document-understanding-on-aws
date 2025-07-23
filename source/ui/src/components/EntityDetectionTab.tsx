@@ -45,6 +45,8 @@ type EntityDetectionTabProps = {
 export default function EntityDetectionTab(props: EntityDetectionTabProps) {
     let documentEntities = getEntitiesToProcess(props.entityType, props);
     const [inputPhrase, setInputPhrase] = useState<string>('');
+    console.log('EntityDetectionTab documentEntities', documentEntities);
+    console.log('selectedEntities', props.selectedEntities);
 
     const getFilteredArray = useCallback(
         (entityType: string) => {
