@@ -87,7 +87,20 @@ export default function DocumentView(props: DocumentViewProps) {
         return new AzureOpenAI(options);
     }, []);
 
-    const docData = React.useMemo(() => {
+    // docData is now a state, not a memoized value
+    const [docData, setDocData] = React.useState<any>({
+        pairs: [],
+        lines: [],
+        tables: [],
+        standardEntities: {},
+        medicalEntities: {},
+        piiEntities: {},
+        textractDetectResponse: [],
+        formattedEntitiesForPrompt: ''
+    });
+
+    // Helper to compute docData from dependencies
+    React.useEffect(() => {
         // Print all text blocks from textractDetectResponse to console and combine into one string
         let allTextractTextBlocks: string[] = [];
         if (documentProcessingResults && Array.isArray(documentProcessingResults.textractDetectResponse)) {
@@ -277,7 +290,7 @@ export default function DocumentView(props: DocumentViewProps) {
         // Print the prompt to the console for inspection
         console.log('LLM SYSTEM PROMPT FOR CHAT SIMULATION:', formattedEntitiesForPrompt);
 
-        return {
+        setDocData({
             pairs,
             lines,
             tables,
@@ -286,7 +299,7 @@ export default function DocumentView(props: DocumentViewProps) {
             piiEntities: documentProcessingResults.comprehendPiiResponse,
             textractDetectResponse: documentProcessingResults.textractDetectResponse,
             formattedEntitiesForPrompt
-        };
+        });
     }, [documentProcessingResults, props.textractDetectResponse, phrase]);
 
     useEffect(() => {
@@ -507,7 +520,6 @@ export default function DocumentView(props: DocumentViewProps) {
     // Chatbot simulation state
     const [chatInput, setChatInput] = React.useState('');
     const [chatHistory, setChatHistory] = React.useState<{ sender: 'user' | 'bot'; message: string }[]>([]);
-    // State to accumulate found entities/phrases in all bot responses
 
     // Chatbot handler using OpenAI client
     const handleChatSubmit = async (e: React.FormEvent) => {
@@ -516,6 +528,7 @@ export default function DocumentView(props: DocumentViewProps) {
         const userMessage = chatInput.trim();
         setChatHistory((prev) => [...prev, { sender: 'user', message: userMessage }]);
         setChatInput('');
+        console.log('docuennt darta', docData);
 
         try {
             // System prompt includes the extracted entity texts for LLM context
@@ -573,7 +586,6 @@ export default function DocumentView(props: DocumentViewProps) {
                 });
                 return Array.from(newSet);
             });
-            console.log(docData.standardEntities);
 
             // Add accumulatedFoundEntities found in docData.standardEntities to selectedEntities
             const newEntityTuples: any[] = [];
@@ -611,6 +623,34 @@ export default function DocumentView(props: DocumentViewProps) {
     React.useEffect(() => {
         if (accumulatedFoundEntities.length > 0) {
             console.log('Entities/phrases found in bot responses (accumulated):', accumulatedFoundEntities);
+
+            // Copy matching entityNames into LLM entityType in standardEntities
+            setDocData((prevDocData: any) => {
+                if (!prevDocData || !prevDocData.standardEntities) return prevDocData;
+                const newLLM: any = {};
+                Object.entries(prevDocData.standardEntities).forEach(([entityType, entityObj]: [string, any]) => {
+                    if (entityObj && typeof entityObj === 'object') {
+                        Object.entries(entityObj).forEach(([entityName, pagesObj]: [string, any]) => {
+                            if (accumulatedFoundEntities.includes(entityName)) {
+                                newLLM[entityName] = pagesObj;
+                            }
+                        });
+                    }
+                });
+                // Only update if there are new LLM entities
+                if (Object.keys(newLLM).length > 0) {
+                    const updatedDocData = {
+                        ...prevDocData,
+                        standardEntities: {
+                            ...prevDocData.standardEntities,
+                            LLM: newLLM
+                        }
+                    };
+                    console.log('Updated docData:', updatedDocData);
+                    return updatedDocData;
+                }
+                return prevDocData;
+            });
         }
     }, [accumulatedFoundEntities]);
 
