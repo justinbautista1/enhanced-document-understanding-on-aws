@@ -71,6 +71,7 @@ export default function DocumentView(props: DocumentViewProps) {
     });
     const [previewRedaction, setPreviewRedaction] = React.useState('');
     const [toolsOpen, setToolsOpen] = React.useState(false);
+    const [accumulatedFoundEntities, setAccumulatedFoundEntities] = React.useState<string[]>([]);
 
     const switchPage = (newPageNumber: number) => {
         setCurrentPageNumber(newPageNumber);
@@ -184,12 +185,7 @@ export default function DocumentView(props: DocumentViewProps) {
         const textract: any = documentProcessingResults.textractDetectResponse;
         const foundPhrasesByPage: Record<number, any> = {};
         const lineEntitiesByPage: any = {};
-        const hardcodedPhrases: any[] = [
-            'john.doe@acmecorp.com',
-            'jane.smith@acmecorp.com',
-            '(555) 123-4567',
-            '(555) 765-4321'
-        ];
+        const hardcodedPhrases: any[] = [];
         // Combine inputted phrase and hardcoded phrases
         const allPhrases = [phrase, ...hardcodedPhrases].filter(Boolean);
 
@@ -377,6 +373,8 @@ export default function DocumentView(props: DocumentViewProps) {
                     textractText={docData.textractDetectResponse}
                     phrase={phrase}
                     setPhrase={setPhrase}
+                    accumulatedFoundEntities={accumulatedFoundEntities}
+                    setAccumulatedFoundEntities={setAccumulatedFoundEntities}
                 />
             )
         },
@@ -407,6 +405,8 @@ export default function DocumentView(props: DocumentViewProps) {
                     textractText={docData.textractDetectResponse}
                     phrase={phrase}
                     setPhrase={setPhrase}
+                    accumulatedFoundEntities={accumulatedFoundEntities}
+                    setAccumulatedFoundEntities={setAccumulatedFoundEntities}
                 />
             )
         },
@@ -437,6 +437,8 @@ export default function DocumentView(props: DocumentViewProps) {
                     textractText={docData.textractDetectResponse}
                     phrase={phrase}
                     setPhrase={setPhrase}
+                    accumulatedFoundEntities={accumulatedFoundEntities}
+                    setAccumulatedFoundEntities={setAccumulatedFoundEntities}
                 />
             )
         },
@@ -506,7 +508,6 @@ export default function DocumentView(props: DocumentViewProps) {
     const [chatInput, setChatInput] = React.useState('');
     const [chatHistory, setChatHistory] = React.useState<{ sender: 'user' | 'bot'; message: string }[]>([]);
     // State to accumulate found entities/phrases in all bot responses
-    const [accumulatedFoundEntities, setAccumulatedFoundEntities] = React.useState<string[]>([]);
 
     // Chatbot handler using OpenAI client
     const handleChatSubmit = async (e: React.FormEvent) => {

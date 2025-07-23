@@ -47,6 +47,8 @@ type EntitiesListProps = {
     setPhrase: Function;
     inputPhrase: string;
     setInputPhrase: Function;
+    accumulatedFoundEntities: string[];
+    setAccumulatedFoundEntities: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 type EntityItemProps = {
@@ -413,10 +415,7 @@ const EntitiesList: React.FC<EntitiesListProps> = (props) => {
 
             props.setSelectedEntities({
                 ...props.selectedEntities,
-                [props.entityType]: [
-                    ...props.selectedEntities[props.entityType],
-                    ...newSelectedEntities,
-                ]
+                [props.entityType]: [...props.selectedEntities[props.entityType], ...newSelectedEntities]
             });
         }
     };
@@ -440,6 +439,7 @@ const EntitiesList: React.FC<EntitiesListProps> = (props) => {
 
     const deselectAllEntities = () => {
         props.setSelectedEntities({ ...props.selectedEntities, [props.entityType]: [] });
+        props.setAccumulatedFoundEntities([]);
     };
 
     const mainTabs =

@@ -35,6 +35,8 @@ type EntityDetectionTabProps = {
     textractText: any;
     phrase: string;
     setPhrase: Function;
+    accumulatedFoundEntities: string[];
+    setAccumulatedFoundEntities: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 /**
@@ -218,6 +220,8 @@ export default function EntityDetectionTab(props: EntityDetectionTabProps) {
                                 setPhrase={props.setPhrase}
                                 inputPhrase={inputPhrase}
                                 setInputPhrase={setInputPhrase}
+                                accumulatedFoundEntities={props.accumulatedFoundEntities}
+                                setAccumulatedFoundEntities={props.setAccumulatedFoundEntities}
                             />
                         </Box>
                     </div>

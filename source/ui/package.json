@@ -64,7 +64,7 @@
     "image-size": "^1.2.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "NODE_OPTIONS=--max_old_space_size=2048 react-scripts start",
     "build": "cp ./node_modules/pdfjs-dist/build/pdf.worker.min.mjs public/ && react-scripts build",
     "test": "jest  --coverage --runInBand --silent",
     "test-debug": "jest  --coverage --runInBand --silent",
