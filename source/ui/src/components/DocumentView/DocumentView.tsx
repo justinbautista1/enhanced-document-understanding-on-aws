@@ -531,6 +531,42 @@ export default function DocumentView(props: DocumentViewProps) {
                 messages
             });
             const botMessage = response.choices?.[0]?.message?.content || 'No response from model.';
+            // Find entities/phrases in botMessage and print to console
+            const allEntities = (() => {
+                // Gather all entities/phrases from docData
+                let entities: string[] = [];
+                // Add 2nd-level keys from standard, medical, pii entities
+                const gatherSecondLevelKeys = (obj: any) => {
+                    if (!obj || typeof obj !== 'object') return [];
+                    let keys: string[] = [];
+                    Object.values(obj).forEach((v) => {
+                        if (v && typeof v === 'object') {
+                            keys.push(...Object.keys(v));
+                        }
+                    });
+                    return keys;
+                };
+                entities.push(...gatherSecondLevelKeys(docData.standardEntities));
+                entities.push(...gatherSecondLevelKeys(docData.medicalEntities));
+                entities.push(...gatherSecondLevelKeys(docData.piiEntities));
+                // Add hardcoded phrases and phrase input
+                const hardcodedPhrases = [
+                    'john.doe@acmecorp.com',
+                    'jane.smith@acmecorp.com',
+                    '(555) 123-4567',
+                    '(555) 765-4321'
+                ];
+                if (phrase) entities.push(phrase);
+                entities.push(...hardcodedPhrases);
+                // Remove duplicates and empty
+                return Array.from(new Set(entities.filter(Boolean)));
+            })();
+            const foundEntities = allEntities.filter((entity) =>
+                botMessage.toLowerCase().includes(entity.toLowerCase())
+            );
+            if (foundEntities.length > 0) {
+                console.log('Entities/phrases found in bot response:', foundEntities);
+            }
             setChatHistory((prev) => [...prev, { sender: 'bot', message: botMessage }]);
         } catch (err: any) {
             setChatHistory((prev) => [
